@@ -15,21 +15,23 @@
     const scaleOfNotes = ["C4", "D4", "Eb4", "F4"];
 
     let rows = [
-        Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
-        Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
-        Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
-        Array.from({ length: 16 }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
+        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
+        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
+        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
+        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
     ];
 
-    let beatIndicators = Array.from({ length: 16 }, (_, i) => i);
+    let beatIndicators = Array.from({ length: 8 }, (_, i) => i);
 
-    Tone.Transport.scheduleRepeat(time => {
+    const myTransport = Tone.getTransport();
+
+    myTransport.scheduleRepeat(time => {
         rows.forEach((row, index) => {
             let synth = synths[index];
             let note = row[beat];
             if (note.active) synth.triggerAttackRelease(note.note, "16n", time);
         });
-        beat = (beat+1) %16;
+        beat = (beat+1) % 8;
     }, "16n");
 
     const handleNoteClick = (rowIndex, noteIndex) => {
@@ -38,18 +40,18 @@
 
     const handlePlayClick = () => {
         if (!isPlaying) Tone.start();
-        Tone.Transport.bpm.value = bpm;
-        Tone.Transport.start();
+        myTransport.bpm.value = bpm;
+        myTransport.start();
         isPlaying = true;
     };
 
     const handleStopClick = () => {
-        Tone.Transport.stop();
+        myTransport.stop();
         isPlaying = false;
     };
 
     $: if (isPlaying) {
-        Tone.Transport.bpm.value = bpm;
+        myTransport.bpm.value = bpm;
     }
 
 </script>
@@ -67,7 +69,7 @@
 
 <div class="sequencer">
     {#each beatIndicators as beatIndicator, bi}
-        <div class="beat-indicator {bi === beat - 1 ? 'live' : ''}"></div>
+        <div class="beat-indicator {bi === beat ? 'live' : ''}"></div>
     {/each}
     {#each rows as row, i}
         {#each row as note, j}
@@ -86,23 +88,35 @@
 
     .sequencer {
         display: grid;
-        grid-template-columns: repeat(16, 1fr);
-        grid-gap: 5px;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 5px;
         width: 100%;
         max-width: 800px;
         margin: auto;
+        justify-content: center;
     }
 
     .note{
         background: #ccc;
-        width: 5vw;
-        height: 5vw;
+        width: 8vw;
+        height: 8vw;
         border: 1px solid #ccc;
         border-radius: 7px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 2rem;
+        /* display: flex; */
+        /* justify-content: center; */
+        /* align-items: center; */
+    }
+
+    .beat-indicator {
+        background: #555;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        /* display: flex; */
+        /* justify-content: center; */
+        /* align-items: center; */
+        color: #fff;
+        margin: 0 auto; 
     }
 
     .first-beat-of-the-bar {
@@ -126,18 +140,7 @@
         color: #fff;
     }
 
-    .beat-indicator {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #555;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: #fff;
-        font-size: 1.5rem;
-        margin: 0 auto; 
-    }
+    
 
     .live {
         background: #05f18f;;
