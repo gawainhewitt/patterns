@@ -1,7 +1,7 @@
 <script>
     import * as Tone from "tone";
 
-    let bpm = 120;
+    let bpm = 99;
     let beat = 0;
     let isPlaying = false;
 
@@ -9,12 +9,16 @@
         new Tone.Synth().toDestination(),
         new Tone.Synth().toDestination(),
         new Tone.Synth().toDestination(),
+        new Tone.Synth().toDestination(),
         new Tone.Synth().toDestination()
     ]
 
-    const scaleOfNotes = ["C4", "D4", "Eb4", "F4"];
+    Tone.BaseContext.lookAhead = 0;
+
+    const scaleOfNotes = ["C4", "D4", "Eb4", "F4", "G4"];
 
     let rows = [
+        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
         Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
         Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
         Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
@@ -29,7 +33,9 @@
         rows.forEach((row, index) => {
             let synth = synths[index];
             let note = row[beat];
-            if (note.active) synth.triggerAttackRelease(note.note, "16n", time);
+            if (note.active) {
+                synth.triggerAttackRelease(note.note, "8n", time);
+            }
         });
         beat = (beat+1) % 8;
     }, "16n");
@@ -75,7 +81,8 @@
         {#each row as note, j}
             <button 
             on:click={() => handleNoteClick(i, j)}
-            class="note {note.active ? 'active' : ''} {j % 4 === 0 ? 'first-beat-of-the-bar': ''}"></button>
+            id="row{i}note{j}"
+            class="note {note.active ? 'active' : ''} {j % 4 === 0 ? 'first-beat-of-the-bar': ''}" class:live={j === beat}></button>
         {/each}
     {/each}
 </div>
@@ -140,9 +147,11 @@
         color: #fff;
     }
 
-    
-
     .live {
+        background: #05f18f;;
+    }
+
+    :global(.lively) {
         background: #05f18f;;
     }
 </style>
