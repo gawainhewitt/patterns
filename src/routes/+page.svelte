@@ -4,8 +4,11 @@
     let bpm = 99;
     let beat = 0;
     let isPlaying = false;
+    let length = 8;
 
     const synths = [
+        new Tone.Synth().toDestination(),
+        new Tone.Synth().toDestination(),
         new Tone.Synth().toDestination(),
         new Tone.Synth().toDestination(),
         new Tone.Synth().toDestination(),
@@ -15,17 +18,19 @@
 
     Tone.BaseContext.lookAhead = 0;
 
-    const scaleOfNotes = ["C4", "D4", "Eb4", "F4", "G4"];
+    const scaleOfNotes = ["C4", "D4", "Eb4", "F4", "G4", "A4", "Bb4"];
 
     let rows = [
-        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
-        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
-        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
-        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
-        Array.from({ length: 8 }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
+        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[6], active: false})),
+        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[5], active: false})),
+        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
+        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
+        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
+        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
+        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
     ];
 
-    let beatIndicators = Array.from({ length: 8 }, (_, i) => i);
+    let beatIndicators = Array.from({ length: length }, (_, i) => i);
 
     const myTransport = Tone.getTransport();
 
@@ -37,7 +42,7 @@
                 synth.triggerAttackRelease(note.note, "8n", time);
             }
         });
-        beat = (beat+1) % 8;
+        beat = (beat+1) % length;
     }, "16n");
 
     const handleNoteClick = (rowIndex, noteIndex) => {
@@ -105,8 +110,8 @@
 
     .note{
         background: #ccc;
-        width: 8vw;
-        height: 8vw;
+        width: 4vw;
+        height: 4vw;
         border: 1px solid #ccc;
         border-radius: 7px;
         /* display: flex; */
