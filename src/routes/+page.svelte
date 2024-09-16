@@ -6,15 +6,31 @@
     let isPlaying = false;
     let length = 8;
 
-    const synths = [
-        new Tone.Synth().toDestination(),
-        new Tone.Synth().toDestination(),
-        new Tone.Synth().toDestination(),
-        new Tone.Synth().toDestination(),
-        new Tone.Synth().toDestination(),
-        new Tone.Synth().toDestination(),
-        new Tone.Synth().toDestination()
-    ]
+    const synth = new Tone.PolySynth().toDestination();
+
+    const sampler = new Tone.Sampler({
+        urls: {
+            C4: "Harp-C4.mp3",
+        },
+        baseUrl: "/audio/",
+        onload: () => {
+            sampler.triggerAttackRelease(["C1", "E1", "G1", "B1"], 0.5);
+        }
+    });
+
+    const reverb = new Tone.Reverb({
+      decay: 3,
+      predelay: 0,
+      wet: 0.5
+    }).toDestination();
+
+    sampler.connect(reverb);
+
+    sampler.set({
+      release: 8,
+      volume: -6
+    });
+
 
     Tone.BaseContext.lookAhead = 0;
 
@@ -36,10 +52,9 @@
 
     myTransport.scheduleRepeat(time => {
         rows.forEach((row, index) => {
-            let synth = synths[index];
             let note = row[beat];
             if (note.active) {
-                synth.triggerAttackRelease(note.note, "8n", time);
+                sampler.triggerAttackRelease(note.note, "8n", time);
             }
         });
         beat = (beat+1) % length;
