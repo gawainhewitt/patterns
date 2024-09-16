@@ -26,12 +26,12 @@
 <style>
     .note{
         background: #ccc;
-        width: 4vw;
-        height: 4vw;
+        width: 8vw;
+        height: 8vw;
         border: 1px solid #ccc;
         border-radius: 7px;
         background-image: url("/images/harp-pink.png");
-        background-size: 4vw;
+        background-size: 8vw;
         /* display: flex; */
         /* justify-content: center; */
         /* align-items: center; */
@@ -40,14 +40,20 @@
     .active {
         background: #600889;
         border: 1px solid #600889;
+        background-image: url("/images/harp-pink.png");
+        background-size: 8vw;
     }
 
     .live {
         background: #05f18f;
+        background-image: url("/images/harp-pink.png");
+        background-size: 8vw;
     }
 
     .active.live {
         background: yellow;
+        background-image: url("/images/harp-pink.png");
+        background-size: 8vw;
     }
 
 
