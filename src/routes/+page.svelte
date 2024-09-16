@@ -1,6 +1,7 @@
 <script>
     import * as Tone from "tone";
 	import Button from "../Button.svelte";
+	import { Instrument } from "tone/build/esm/instrument/Instrument";
 
     let bpm = 99;
     let beat = 0;
@@ -19,7 +20,7 @@
 
     const synth = new Tone.PolySynth().toDestination();
 
-    const sampler = new Tone.Sampler({
+    const harpSampler = new Tone.Sampler({
         urls: {
             C4: "Harp-C4.mp3",
         },
@@ -28,15 +29,30 @@
         }
     });
 
+    const drumSampler = new Tone.Sampler({
+        urls: {
+            C4: "kick.mp3",
+            D4: "snare.mp3",
+            E4: "woodblock.mp3"
+        },
+        baseUrl: "/audio/",
+        onload: () => {
+        }
+    }).toDestination();
+
+    drumSampler.set({
+      volume: -12
+    });
+
     const reverb = new Tone.Reverb({
       decay: 3,
       predelay: 0,
       wet: 0.5
     }).toDestination();
 
-    sampler.connect(reverb);
+    harpSampler.connect(reverb);
 
-    sampler.set({
+    harpSampler.set({
       release: 8,
       volume: -12
     });
@@ -45,15 +61,21 @@
     Tone.BaseContext.lookAhead = 0.5;
 
 
-    let rows = [
-        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[6], active: false})), 
-        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[5], active: false})),
-        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
-        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
-        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
-        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
-        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
+    let harpRows = [
+        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[6], active: false})), 
+        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[5], active: false})),
+        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
+        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
+        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
+        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
+        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
     ];
+
+    let drumRows = [
+        Array.from({ length }, (_, i) => ({ note: "E4", instrumentName: "woodblock", active: false})),
+        Array.from({ length }, (_, i) => ({ note: "D4", instrumentName: "snare", active: false})),
+        Array.from({ length }, (_, i) => ({ note: "C4", instrumentName: "kick", active: false})),
+    ]
 
 
     $: beatIndicators = Array.from({ length: length }, (_, i) => i);
@@ -61,20 +83,32 @@
     const myTransport = Tone.getTransport();
 
     myTransport.scheduleRepeat(time => {
-        rows.forEach((row, index) => {
+        harpRows.forEach((row, index) => {
             let note = row[beat];
             if (note.active) {
-                sampler.triggerAttackRelease(note.note, "8n", time);
+                harpSampler.triggerAttackRelease(note.note, "8n", time);
+            }
+        });
+        drumRows.forEach((row, index) => {
+            let note = row[beat];
+            if (note.active) {
+                drumSampler.triggerAttackRelease(note.note, "8n", time);
             }
         });
         beat = (beat+1) % length;
     }, "16n");
 
-    const handleNoteClick = (element) => {
+    const handleHarpClick = (element) => {
         const rowIndex = element.detail.rowIndex;
         const noteIndex = element.detail.noteIndex;
-        rows[rowIndex][noteIndex].active = !rows[rowIndex][noteIndex].active;
-        rows = rows;
+        harpRows[rowIndex][noteIndex].active = !harpRows[rowIndex][noteIndex].active;
+        harpRows = harpRows;
+    };
+    const handleDrumClick = (element) => {
+        const rowIndex = element.detail.rowIndex;
+        const noteIndex = element.detail.noteIndex;
+        drumRows[rowIndex][noteIndex].active = !drumRows[rowIndex][noteIndex].active;
+        drumRows = drumRows;
     };
 
     const handlePlayClick = () => {
@@ -93,21 +127,21 @@
         if(cMajorSelected){
             cMajorSelected = false;
             scaleOfNotes = gMinor;
-            let whichNote = rows.length-1;
-            rows.forEach((row, index) => {
+            let whichNote = harpRows.length-1;
+            harpRows.forEach((row, index) => {
                 row.forEach((note) => note.note = scaleOfNotes[whichNote])
                 whichNote = whichNote -1;
             })
         } else {
             cMajorSelected = true;
             scaleOfNotes = cMajor;
-            let whichNote = rows.length-1;
-            rows.forEach((row, index) => {
+            let whichNote = harpRows.length-1;
+            harpRows.forEach((row, index) => {
                 row.forEach((note) => note.note = scaleOfNotes[whichNote])
                 whichNote = whichNote -1;
             })
         }
-        rows = rows;
+        harpRows = harpRows;
 
     }
 
@@ -136,25 +170,32 @@
 </div>
 
 <div class="sequencer">
-    {#each beatIndicators as beatIndicator, bi}
-        <div class="beat-indicator {bi === beat ? 'live' : ''}"></div>
-    {/each}
-    {#each rows as row, i}
+    {#each harpRows as row, i}
         {#each row as note, j}
         <Button
-            on:clicked={handleNoteClick}
+            on:clicked={handleHarpClick}
+            instrumentName = "harp"
             rowIndex = "{i}"
             noteIndex = "{j}"
             noteActive = "{note.active}"
             noteLive = "{j === beat}"
         />
-            <!-- <button 
-            on:click={() => handleNoteClick(i, j)}
-            id="row{i}note{j}"
-            class="note {note.active ? 'active' : ''} {j % 4 === 0 ? 'first-beat-of-the-bar': ''}" class:live={j === beat}></button> -->
+        {/each}
+    {/each}
+    {#each drumRows as row, i}
+        {#each row as note, j}
+        <Button
+            on:clicked={handleDrumClick}
+            instrumentName = {note.instrumentName}
+            rowIndex = "{i}"
+            noteIndex = "{j}"
+            noteActive = "{note.active}"
+            noteLive = "{j === beat}"
+        />
         {/each}
     {/each}
 </div>
+
 
 <style>
 
@@ -171,31 +212,6 @@
         margin: auto;
         justify-content: center;
     }
-
-    
-
-    .beat-indicator {
-        background: #555;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        /* display: flex; */
-        /* justify-content: center; */
-        /* align-items: center; */
-        color: #fff;
-        margin: 0 auto; 
-    }
-
-    .live {
-        background: #05f18f;;
-    }
-
-    .first-beat-of-the-bar {
-        background: #98c9fa;
-        border: 1px solid #98c9fa;
-    }
-
-    
 
     .bpm-controls {
         display: flex;

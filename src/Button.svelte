@@ -1,11 +1,11 @@
 <script>
     import { createEventDispatcher } from 'svelte';
+
     export let rowIndex;
     export let noteIndex;
     export let noteActive;
     export let noteLive;
-    // export let instrument;
-
+    export let instrumentName;
 
     const dispatch = createEventDispatcher()
 
@@ -20,7 +20,9 @@
 <button 
     on:click={handleButton}
     id="row{rowIndex}note{noteIndex}"
-    class="note {noteActive ? 'active' : ''} {noteIndex % 4 === 0 ? 'first-beat-of-the-bar': ''}" class:live={noteLive}>
+    class=" note {noteActive ? 'active' : ''}" class:live={noteLive}
+    style="background-image: url('{instrumentName}-pink.png')"
+    >
 </button>
 
 <style>
@@ -30,30 +32,23 @@
         height: 8vw;
         border: 1px solid #ccc;
         border-radius: 7px;
-        background-image: url("/images/harp-pink.png");
-        background-size: 8vw;
-        /* display: flex; */
-        /* justify-content: center; */
-        /* align-items: center; */
+        background-size: 8vw; 
     }
 
     .active {
         background: #600889;
         border: 1px solid #600889;
-        background-image: url("/images/harp-pink.png");
-        background-size: 8vw;
+        background-size: 8vw; 
     }
 
     .live {
         background: #05f18f;
-        background-image: url("/images/harp-pink.png");
-        background-size: 8vw;
+        background-size: 8vw; 
     }
 
     .active.live {
         background: yellow;
-        background-image: url("/images/harp-pink.png");
-        background-size: 8vw;
+        background-size: 8vw; 
     }
 
 
