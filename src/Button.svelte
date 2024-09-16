@@ -1,6 +1,6 @@
 <script>
     import { createEventDispatcher } from 'svelte';
-    import harpPink from '$lib/harp-pink.png';
+    import harpPink from '$lib/images/harp-pink.png';
     export let rowIndex;
     export let noteIndex;
     export let noteActive;
