@@ -1,5 +1,6 @@
 <script>
     import * as Tone from "tone";
+	import Button from "../Button.svelte";
 
     let bpm = 99;
     let beat = 0;
@@ -7,7 +8,7 @@
     let length = 8;
     let cMajorSelected = true;
     const cMajor = ["C4", "D4", "E4", "F4", "G4", "A4", "B4"];
-    const gMinor = ["G4", "A4", "Bb4", "C5", "D5", "Eb5", "F5"];
+    const gMinor = ["C4", "D4", "Eb4", "F4", "G4", "A4", "Bb4"];
 
     // $: scaleOfNotes = cMajorSelected ? ["C4", "D4", "E4", "F4", "G4", "A4", "B4"] : ["G4", "A4", "Bb4", "C5", "D5", "Eb5", "F5"];
 
@@ -45,7 +46,7 @@
 
 
     let rows = [
-        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[6], active: false})), // i think break this down? to allow scale changeS
+        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[6], active: false})), 
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[5], active: false})),
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
@@ -55,7 +56,7 @@
     ];
 
 
-    let beatIndicators = Array.from({ length: length }, (_, i) => i);
+    $: beatIndicators = Array.from({ length: length }, (_, i) => i);
 
     const myTransport = Tone.getTransport();
 
@@ -69,7 +70,9 @@
         beat = (beat+1) % length;
     }, "16n");
 
-    const handleNoteClick = (rowIndex, noteIndex) => {
+    const handleNoteClick = (element) => {
+        const rowIndex = element.detail.rowIndex;
+        const noteIndex = element.detail.noteIndex;
         rows[rowIndex][noteIndex].active = !rows[rowIndex][noteIndex].active;
         rows = rows;
     };
@@ -138,10 +141,17 @@
     {/each}
     {#each rows as row, i}
         {#each row as note, j}
-            <button 
+        <Button
+            on:clicked={handleNoteClick}
+            rowIndex = "{i}"
+            noteIndex = "{j}"
+            noteActive = "{note.active}"
+            noteLive = "{j === beat}"
+        />
+            <!-- <button 
             on:click={() => handleNoteClick(i, j)}
             id="row{i}note{j}"
-            class="note {note.active ? 'active' : ''} {j % 4 === 0 ? 'first-beat-of-the-bar': ''}" class:live={j === beat}></button>
+            class="note {note.active ? 'active' : ''} {j % 4 === 0 ? 'first-beat-of-the-bar': ''}" class:live={j === beat}></button> -->
         {/each}
     {/each}
 </div>
@@ -162,16 +172,7 @@
         justify-content: center;
     }
 
-    .note{
-        background: #ccc;
-        width: 4vw;
-        height: 4vw;
-        border: 1px solid #ccc;
-        border-radius: 7px;
-        /* display: flex; */
-        /* justify-content: center; */
-        /* align-items: center; */
-    }
+    
 
     .beat-indicator {
         background: #555;
@@ -185,15 +186,16 @@
         margin: 0 auto; 
     }
 
+    .live {
+        background: #05f18f;;
+    }
+
     .first-beat-of-the-bar {
         background: #98c9fa;
         border: 1px solid #98c9fa;
     }
 
-    .active {
-        background: #600889;
-        border: 1px solid #600889;
-    }
+    
 
     .bpm-controls {
         display: flex;
@@ -206,9 +208,7 @@
         color: #fff;
     }
 
-    .live {
-        background: #05f18f;;
-    }
+    
 
     :global(.lively) {
         background: #05f18f;;
