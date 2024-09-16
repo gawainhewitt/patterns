@@ -37,14 +37,14 @@
 
     sampler.set({
       release: 8,
-      volume: -6
+      volume: -12
     });
 
 
-    Tone.BaseContext.lookAhead = 0;
+    Tone.BaseContext.lookAhead = 0.5;
 
 
-    $: rows = [
+    let rows = [
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[6], active: false})), // i think break this down? to allow scale changeS
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[5], active: false})),
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
@@ -53,6 +53,7 @@
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
     ];
+
 
     let beatIndicators = Array.from({ length: length }, (_, i) => i);
 
@@ -70,6 +71,7 @@
 
     const handleNoteClick = (rowIndex, noteIndex) => {
         rows[rowIndex][noteIndex].active = !rows[rowIndex][noteIndex].active;
+        rows = rows;
     };
 
     const handlePlayClick = () => {
@@ -88,12 +90,22 @@
         if(cMajorSelected){
             cMajorSelected = false;
             scaleOfNotes = gMinor;
-            console.log("gMinor");
+            let whichNote = rows.length-1;
+            rows.forEach((row, index) => {
+                row.forEach((note) => note.note = scaleOfNotes[whichNote])
+                whichNote = whichNote -1;
+            })
         } else {
             cMajorSelected = true;
             scaleOfNotes = cMajor;
-            console.log("cMajor");
+            let whichNote = rows.length-1;
+            rows.forEach((row, index) => {
+                row.forEach((note) => note.note = scaleOfNotes[whichNote])
+                whichNote = whichNote -1;
+            })
         }
+        rows = rows;
+
     }
 
     $: if (isPlaying) {
