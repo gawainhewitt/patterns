@@ -5,6 +5,16 @@
     let beat = 0;
     let isPlaying = false;
     let length = 8;
+    let cMajorSelected = true;
+    const cMajor = ["C4", "D4", "E4", "F4", "G4", "A4", "B4"];
+    const gMinor = ["G4", "A4", "Bb4", "C5", "D5", "Eb5", "F5"];
+
+    // $: scaleOfNotes = cMajorSelected ? ["C4", "D4", "E4", "F4", "G4", "A4", "B4"] : ["G4", "A4", "Bb4", "C5", "D5", "Eb5", "F5"];
+
+    let scaleOfNotes = cMajor;
+
+    // $: scaleOfNotes = cMajorSelected ? cMajor : gMinor ;
+
 
     const synth = new Tone.PolySynth().toDestination();
 
@@ -14,7 +24,6 @@
         },
         baseUrl: "/audio/",
         onload: () => {
-            sampler.triggerAttackRelease(["C1", "E1", "G1", "B1"], 0.5);
         }
     });
 
@@ -34,10 +43,9 @@
 
     Tone.BaseContext.lookAhead = 0;
 
-    const scaleOfNotes = ["C4", "D4", "Eb4", "F4", "G4", "A4", "Bb4"];
 
-    let rows = [
-        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[6], active: false})),
+    $: rows = [
+        Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[6], active: false})), // i think break this down? to allow scale changeS
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[5], active: false})),
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
         Array.from({ length: length }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
@@ -76,9 +84,23 @@
         isPlaying = false;
     };
 
+    const handleScaleClick = () => {
+        if(cMajorSelected){
+            cMajorSelected = false;
+            scaleOfNotes = gMinor;
+            console.log("gMinor");
+        } else {
+            cMajorSelected = true;
+            scaleOfNotes = cMajor;
+            console.log("cMajor");
+        }
+    }
+
     $: if (isPlaying) {
         myTransport.bpm.value = bpm;
     }
+
+    
 
 </script>
 
@@ -90,6 +112,11 @@
         <button on:click={handleStopClick}>Stop</button>
     {:else}
         <button on:click={handlePlayClick}>Play</button>
+    {/if}
+    {#if cMajorSelected}
+        <button on:click={handleScaleClick}>C Major</button>
+    {:else}
+    <button on:click={handleScaleClick}>G Minor</button>
     {/if}
 </div>
 
