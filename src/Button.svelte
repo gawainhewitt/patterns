@@ -1,6 +1,5 @@
 <script>
     import { createEventDispatcher } from 'svelte';
-    import harpPink from '$lib/images/harp-pink.png';
     export let rowIndex;
     export let noteIndex;
     export let noteActive;
@@ -22,7 +21,6 @@
     on:click={handleButton}
     id="row{rowIndex}note{noteIndex}"
     class="note {noteActive ? 'active' : ''} {noteIndex % 4 === 0 ? 'first-beat-of-the-bar': ''}" class:live={noteLive}>
-    <img src={harpPink} >
 </button>
 
 <style>
@@ -32,15 +30,11 @@
         height: 4vw;
         border: 1px solid #ccc;
         border-radius: 7px;
+        background-image: url("/images/harp-pink.png");
+        background-size: 4vw;
         /* display: flex; */
         /* justify-content: center; */
         /* align-items: center; */
-    }
-
-    img {
-        width: 4vw;
-        position: relative;
-        left: -0.75vw;
     }
 
     .active {
