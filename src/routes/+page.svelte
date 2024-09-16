@@ -156,7 +156,7 @@
 
 <div class="bpm-controls">
     <label for="bpm">{bpm} BPM</label>
-    <input type="range" id="bpm" min="60" max="240" bind:value={bpm} />
+    <input type="range" id="bpm" min="40" max="170" bind:value={bpm} />
     {#if isPlaying}
         <button on:click={handleStopClick}>Stop</button>
     {:else}
