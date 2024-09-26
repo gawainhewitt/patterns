@@ -82,11 +82,13 @@
 
     const myTransport = Tone.getTransport();
 
-    myTransport.scheduleRepeat(time => {
+    myTransport.scheduleRepeat((time) => {
+        beat = (beat+1) % length;
         harpRows.forEach((row, index) => {
             let note = row[beat];
-            if (note.active) {
+            if (note.active) {  
                 harpSampler.triggerAttackRelease(note.note, "8n", time);
+                console.log(`yes ${beat}`);
             }
         });
         drumRows.forEach((row, index) => {
@@ -95,7 +97,6 @@
                 drumSampler.triggerAttackRelease(note.note, "8n", time);
             }
         });
-        beat = (beat+1) % length;
     }, "16n");
 
     const handleHarpClick = (element) => {
