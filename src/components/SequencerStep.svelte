@@ -11,14 +11,13 @@
 
     const handleButton = () => {
         dispatch("clicked", {rowIndex, noteIndex});
-        // console.log(rowIndex, noteIndex);
     }
 
 </script>
 
 
 <button 
-    on:click={handleButton}
+    on:click|preventDefault|stopPropagation={handleButton}
     id="row{rowIndex}note{noteIndex}"
     class=" note {noteActive ? 'active' : ''}" class:live={noteLive}
     style="background-image: url('{instrumentName}-pink.png')"

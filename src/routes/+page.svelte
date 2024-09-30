@@ -1,7 +1,8 @@
 <script>
     import * as Tone from "tone";
-	import Button from "../Button.svelte";
+	import SequencerStep from "../components/SequencerStep.svelte";
 	import { Instrument } from "tone/build/esm/instrument/Instrument";
+	import TransportButton from "../components/TransportButton.svelte";
 
     let bpm = 99;
     let beat = 0;
@@ -9,16 +10,9 @@
     let length = 8;
     let cMajorSelected = true;
     const cMajor = ["C4", "D4", "E4", "F4", "G4", "A4", "B4"];
-    const gMinor = ["C4", "D4", "Eb4", "F4", "G4", "A4", "Bb4"];
-
-    // $: scaleOfNotes = cMajorSelected ? ["C4", "D4", "E4", "F4", "G4", "A4", "B4"] : ["G4", "A4", "Bb4", "C5", "D5", "Eb5", "F5"];
+    const gMinor = ["G3", "A3", "Bb3", "C4", "D4", "Eb4", "F4"];
 
     let scaleOfNotes = cMajor;
-
-    // $: scaleOfNotes = cMajorSelected ? cMajor : gMinor ;
-
-
-    const synth = new Tone.PolySynth().toDestination();
 
     const harpSampler = new Tone.Sampler({
         urls: {
@@ -88,7 +82,6 @@
             let note = row[beat];
             if (note.active) {  
                 harpSampler.triggerAttackRelease(note.note, "8n", time);
-                console.log(`yes ${beat}`);
             }
         });
         drumRows.forEach((row, index) => {
@@ -112,19 +105,19 @@
         drumRows = drumRows;
     };
 
-    const handlePlayClick = () => {
+    const handlePlayClick = (e) => {
         if (!isPlaying) Tone.start();
         myTransport.bpm.value = bpm;
         myTransport.start();
         isPlaying = true;
     };
 
-    const handleStopClick = () => {
+    const handleStopClick = (e) => {
         myTransport.stop();
         isPlaying = false;
     };
 
-    const handleScaleClick = () => {
+    const handleScaleClick = (e) => {
         if(cMajorSelected){
             cMajorSelected = false;
             scaleOfNotes = gMinor;
@@ -156,24 +149,32 @@
 
 
 <div class="bpm-controls">
-    <label for="bpm">{bpm} BPM</label>
-    <input type="range" id="bpm" min="40" max="170" bind:value={bpm} />
+    <label class="bpm-value" for="bpm" >{bpm} BPM</label>
+    <input class="bpm-slider" type="range" id="bpm" min="40" max="170" bind:value={bpm} />
     {#if isPlaying}
-        <button on:click={handleStopClick}>Stop</button>
+        <TransportButton on:clicked={handleStopClick}
+        buttonName = "{{name: "Stop", colour: "Red"}}"
+        />
     {:else}
-        <button on:click={handlePlayClick}>Play</button>
+        <TransportButton on:clicked={handlePlayClick}
+        buttonName = "{{name: "Play", colour: "green"}}"
+        />
     {/if}
     {#if cMajorSelected}
-        <button on:click={handleScaleClick}>C Major</button>
+        <TransportButton on:clicked={handleScaleClick}
+        buttonName = "{{name: "C Major", colour: "powderblue"}}"
+        />
     {:else}
-    <button on:click={handleScaleClick}>G Minor</button>
+        <TransportButton on:clicked={handleScaleClick}
+        buttonName = "{{name: "G Minor", colour: "grey"}}"
+        />
     {/if}
 </div>
 
 <div class="sequencer">
     {#each harpRows as row, i}
         {#each row as note, j}
-        <Button
+        <SequencerStep
             on:clicked={handleHarpClick}
             instrumentName = "harp"
             rowIndex = "{i}"
@@ -185,7 +186,7 @@
     {/each}
     {#each drumRows as row, i}
         {#each row as note, j}
-        <Button
+        <SequencerStep
             on:clicked={handleDrumClick}
             instrumentName = {note.instrumentName}
             rowIndex = "{i}"
@@ -218,14 +219,38 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
+        margin: 0 1em 0;
     }
 
     .bpm-controls label {
         color: #fff;
     }
 
-    
+    .bpm-value {
+        width: 14vw;
+        height: 4vw;
+        border-radius: 7px;
+        background-size: 8vw; 
+        margin: 0 1em 1em 0;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 3vw;
+        color: white;
+        text-align: center;
+    }
+
+    .bpm-slider {
+        width: 35vw;
+        height: 4vw;
+        border-radius: 7px;
+        background-size: 8vw; 
+        margin: 0 1em 1em 0;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 3vw;
+        color: white;
+        text-align: center;
+    }
 
     :global(.lively) {
         background: #05f18f;;
