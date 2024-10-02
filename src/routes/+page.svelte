@@ -147,55 +147,57 @@
 
 </script>
 
-
-<div class="bpm-controls">
-    <label class="bpm-value" for="bpm" >{bpm} BPM</label>
-    <input class="bpm-slider" type="range" id="bpm" min="40" max="170" bind:value={bpm} />
-    {#if isPlaying}
-        <TransportButton on:clicked={handleStopClick}
-        buttonName = "{{name: "Stop", colour: "Red"}}"
-        />
-    {:else}
-        <TransportButton on:clicked={handlePlayClick}
-        buttonName = "{{name: "Play", colour: "green"}}"
-        />
-    {/if}
-    {#if cMajorSelected}
-        <TransportButton on:clicked={handleScaleClick}
-        buttonName = "{{name: "C Major", colour: "powderblue"}}"
-        />
-    {:else}
-        <TransportButton on:clicked={handleScaleClick}
-        buttonName = "{{name: "G Minor", colour: "grey"}}"
-        />
-    {/if}
-</div>
-
-<div class="sequencer">
-    {#each harpRows as row, i}
-        {#each row as note, j}
-        <SequencerStep
-            on:clicked={handleHarpClick}
-            instrumentName = "harp"
-            rowIndex = "{i}"
-            noteIndex = "{j}"
-            noteActive = "{note.active}"
-            noteLive = "{j === beat}"
-        />
+<div class="container">
+    <div class="bpm-controls">
+        <label class="bpm-value" for="bpm" >{bpm} BPM</label>
+        <input class="bpm-slider" type="range" id="bpm" min="40" max="170" bind:value={bpm} />
+        {#if isPlaying}
+            <TransportButton on:clicked={handleStopClick}
+            buttonName = "{{name: "Stop", colour: "Red"}}"
+            />
+        {:else}
+            <TransportButton on:clicked={handlePlayClick}
+            buttonName = "{{name: "Play", colour: "green"}}"
+            />
+        {/if}
+        {#if cMajorSelected}
+            <TransportButton on:clicked={handleScaleClick}
+            buttonName = "{{name: "C Major", colour: "powderblue"}}"
+            />
+        {:else}
+            <TransportButton on:clicked={handleScaleClick}
+            buttonName = "{{name: "G Minor", colour: "grey"}}"
+            />
+        {/if}
+    </div>
+    
+    <div class="sequencer">
+        {#each harpRows as row, i}
+            {#each row as note, j}
+            <SequencerStep
+                on:clicked={handleHarpClick}
+                instrumentName = "harp"
+                rowIndex = "{i}"
+                noteIndex = "{j}"
+                noteActive = "{note.active}"
+                noteLive = "{j === beat}"
+            />
+            {/each}
         {/each}
-    {/each}
-    {#each drumRows as row, i}
-        {#each row as note, j}
-        <SequencerStep
-            on:clicked={handleDrumClick}
-            instrumentName = {note.instrumentName}
-            rowIndex = "{i}"
-            noteIndex = "{j}"
-            noteActive = "{note.active}"
-            noteLive = "{j === beat}"
-        />
+        {#each drumRows as row, i}
+            {#each row as note, j}
+            <SequencerStep
+                on:clicked={handleDrumClick}
+                instrumentName = {note.instrumentName}
+                rowIndex = "{i}"
+                noteIndex = "{j}"
+                noteActive = "{note.active}"
+                noteLive = "{j === beat}"
+            />
+            {/each}
         {/each}
-    {/each}
+    </div>
+
 </div>
 
 
@@ -205,12 +207,33 @@
         background: #222;
     }
 
+    .container {
+        max-width: 450px;
+        height: 95vh;
+        margin-inline: auto;  
+    }
+    
+    
+    @media (min-width: 1920px) {
+        .container {
+                max-width: 900px;
+                height: 95vh;
+                margin-inline: auto;  
+            }
+    }
+    
+    @media (orientation: portrait) {
+        .container {
+            max-width: 700px;
+            height: 95vh;
+            margin-inline: auto;  
+        } 
+    }
+
     .sequencer {
         display: grid;
         grid-template-columns: repeat(8, 1fr);
         gap: 5px;
-        width: 100%;
-        max-width: 800px;
         margin: auto;
         justify-content: center;
     }
@@ -220,6 +243,7 @@
         align-items: center;
         justify-content: center;
         margin: 0 1em 0;
+        height: 10%;
     }
 
     .bpm-controls label {
@@ -227,29 +251,19 @@
     }
 
     .bpm-value {
-        width: 14vw;
-        height: 4vw;
-        border-radius: 7px;
+        width: 20%;
         background-size: 8vw; 
         margin: 0 1em 1em 0;
         font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
-        font-size: 3vw;
+        font-size: 1em;
         color: white;
         text-align: center;
     }
 
     .bpm-slider {
-        width: 35vw;
-        height: 4vw;
-        border-radius: 7px;
-        background-size: 8vw; 
+        width: 150%;
         margin: 0 1em 1em 0;
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: bold;
-        font-size: 3vw;
-        color: white;
-        text-align: center;
     }
 
     :global(.lively) {
