@@ -12,14 +12,14 @@
 </script>
 
 
-<div 
+<button 
     on:click|preventDefault|stopPropagation={handleButton}
     class="transport"
     style={`background-color:${buttonName.colour};`}>
     <div class="button-name">
         {buttonName.name}
     </div>
-</div>
+</button>
 
 <style>
 

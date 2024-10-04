@@ -3,6 +3,7 @@
 	import SequencerStep from "../components/SequencerStep.svelte";
 	import { Instrument } from "tone/build/esm/instrument/Instrument";
 	import TransportButton from "../components/TransportButton.svelte";
+    import Fullscreen from "../components/Fullscreen.svelte";
 
     let bpm = 99;
     let beat = 0;
@@ -136,7 +137,10 @@
             })
         }
         harpRows = harpRows;
+    }
 
+    const handleSave = () => {
+        console.log("save");
     }
 
     $: if (isPlaying) {
@@ -147,58 +151,74 @@
 
 </script>
 
-<div class="container">
-    <div class="bpm-controls">
-        <label class="bpm-value" for="bpm" >{bpm} BPM</label>
-        <input class="bpm-slider" type="range" id="bpm" min="40" max="170" bind:value={bpm} />
-        {#if isPlaying}
-            <TransportButton on:clicked={handleStopClick}
-            buttonName = "{{name: "Stop", colour: "Red"}}"
-            />
-        {:else}
-            <TransportButton on:clicked={handlePlayClick}
-            buttonName = "{{name: "Play", colour: "green"}}"
-            />
-        {/if}
-        {#if cMajorSelected}
-            <TransportButton on:clicked={handleScaleClick}
-            buttonName = "{{name: "C Major", colour: "powderblue"}}"
-            />
-        {:else}
-            <TransportButton on:clicked={handleScaleClick}
-            buttonName = "{{name: "G Minor", colour: "grey"}}"
-            />
-        {/if}
-    </div>
-    
-    <div class="sequencer">
-        {#each harpRows as row, i}
-            {#each row as note, j}
-            <SequencerStep
-                on:clicked={handleHarpClick}
-                instrumentName = "harp"
-                rowIndex = "{i}"
-                noteIndex = "{j}"
-                noteActive = "{note.active}"
-                noteLive = "{j === beat}"
-            />
-            {/each}
-        {/each}
-        {#each drumRows as row, i}
-            {#each row as note, j}
-            <SequencerStep
-                on:clicked={handleDrumClick}
-                instrumentName = {note.instrumentName}
-                rowIndex = "{i}"
-                noteIndex = "{j}"
-                noteActive = "{note.active}"
-                noteLive = "{j === beat}"
-            />
-            {/each}
-        {/each}
-    </div>
+<Fullscreen>
 
-</div>
+    <div class="container">
+        <div class="bpm-controls">
+            
+            {#if isPlaying}
+                <TransportButton 
+                on:clicked={handleStopClick}
+                buttonName = "{{name: "Stop", colour: "Red"}}"
+                />
+            {:else}
+                <TransportButton 
+                on:clicked={handlePlayClick}
+                buttonName = "{{name: "Play", colour: "green"}}"
+                />
+            {/if}
+            {#if cMajorSelected}
+                <TransportButton 
+                on:clicked={handleScaleClick}
+                buttonName = "{{name: "C Major", colour: "powderblue"}}"
+                />
+            {:else}
+                <TransportButton 
+                on:clicked={handleScaleClick}
+                buttonName = "{{name: "G Minor", colour: "grey"}}"
+                />
+            {/if}
+            <TransportButton 
+            on:clicked={handleSave}
+            buttonName = "{{name: "Save", colour: "orange"}}"
+            />
+        </div>
+        
+        <div class="sequencer">
+            {#each harpRows as row, i}
+                {#each row as note, j}
+                <SequencerStep
+                    on:clicked={handleHarpClick}
+                    instrumentName = "harp"
+                    rowIndex = "{i}"
+                    noteIndex = "{j}"
+                    noteActive = "{note.active}"
+                    noteLive = "{j === beat}"
+                />
+                {/each}
+            {/each}
+            {#each drumRows as row, i}
+                {#each row as note, j}
+                <SequencerStep
+                    on:clicked={handleDrumClick}
+                    instrumentName = {note.instrumentName}
+                    rowIndex = "{i}"
+                    noteIndex = "{j}"
+                    noteActive = "{note.active}"
+                    noteLive = "{j === beat}"
+                />
+                {/each}
+            {/each}
+        </div>
+
+        <div class="bpm-controls">
+            <label class="bpm-value" for="bpm" >{bpm} BPM</label>
+            <input class="bpm-slider" type="range" id="bpm" min="40" max="170" bind:value={bpm} />
+        </div>
+
+    
+    </div>
+</Fullscreen>
 
 
 <style>
@@ -208,7 +228,7 @@
     }
 
     .container {
-        max-width: 450px;
+        max-width: 400px;
         height: 95vh;
         margin-inline: auto;  
     }
