@@ -1,19 +1,22 @@
 <script>
     import * as Tone from "tone";
 	import SequencerStep from "../components/SequencerStep.svelte";
-	import { Instrument } from "tone/build/esm/instrument/Instrument";
 	import TransportButton from "../components/TransportButton.svelte";
     import Fullscreen from "../components/Fullscreen.svelte";
 
     let bpm = 99;
-    let beat = 0;
+    let beat = -1;
     let isPlaying = false;
     let length = 8;
-    let cMajorSelected = true;
-    const cMajor = ["C4", "D4", "E4", "F4", "G4", "A4", "B4"];
-    const gMinor = ["G3", "A3", "Bb3", "C4", "D4", "Eb4", "F4"];
+    let sequencerVisible = true;
+    let scales = [ 
+        {label: "cMajor", value: ["C4", "D4", "E4", "F4", "G4", "A4", "B4"]},
+        {label: "gMinor", value: ["G3", "A3", "Bb3", "C4", "D4", "Eb4", "F4"]},
+        {label: "daft", value: ["C4", "D4", "E4", "G3", "A3", "Bb3", "E4"]}
+    ];
+    let selectedScale = scales[0];
 
-    let scaleOfNotes = cMajor;
+    let scaleOfNotes = scales[0].value;
 
     const harpSampler = new Tone.Sampler({
         urls: {
@@ -118,26 +121,25 @@
         isPlaying = false;
     };
 
-    const handleScaleClick = (e) => {
-        if(cMajorSelected){
-            cMajorSelected = false;
-            scaleOfNotes = gMinor;
-            let whichNote = harpRows.length-1;
-            harpRows.forEach((row, index) => {
-                row.forEach((note) => note.note = scaleOfNotes[whichNote])
-                whichNote = whichNote -1;
-            })
+    const handleSettingsClick = (e) => {
+        if(sequencerVisible){
+            sequencerVisible = false;
         } else {
-            cMajorSelected = true;
-            scaleOfNotes = cMajor;
-            let whichNote = harpRows.length-1;
-            harpRows.forEach((row, index) => {
-                row.forEach((note) => note.note = scaleOfNotes[whichNote])
-                whichNote = whichNote -1;
-            })
+            sequencerVisible = true;
         }
         harpRows = harpRows;
     }
+
+    const changeScale = (scale) => {
+        console.log(scale.label);
+        let whichNote = harpRows.length-1;
+            harpRows.forEach((row, index) => {
+                row.forEach((note) => note.note = scale.value[whichNote])
+                whichNote = whichNote -1;
+            })
+    }
+
+    $: changeScale(selectedScale);
 
     const handleSave = () => {
         console.log("save");
@@ -147,8 +149,6 @@
         myTransport.bpm.value = bpm;
     }
 
-    
-
 </script>
 
 <Fullscreen>
@@ -156,6 +156,20 @@
     <div class="container">
         <div class="bpm-controls">
             
+            
+
+            {#if sequencerVisible}
+                <TransportButton 
+                on:clicked={handleSettingsClick}
+                buttonName = "{{name: "Settings", colour: "powderblue"}}"
+                />
+            {:else}
+                <TransportButton 
+                on:clicked={handleSettingsClick}
+                buttonName = "{{name: "Back", colour: "grey"}}"
+                />
+            {/if}
+
             {#if isPlaying}
                 <TransportButton 
                 on:clicked={handleStopClick}
@@ -167,49 +181,50 @@
                 buttonName = "{{name: "Play", colour: "green"}}"
                 />
             {/if}
-            {#if cMajorSelected}
-                <TransportButton 
-                on:clicked={handleScaleClick}
-                buttonName = "{{name: "C Major", colour: "powderblue"}}"
-                />
-            {:else}
-                <TransportButton 
-                on:clicked={handleScaleClick}
-                buttonName = "{{name: "G Minor", colour: "grey"}}"
-                />
-            {/if}
+
             <TransportButton 
             on:clicked={handleSave}
             buttonName = "{{name: "Save", colour: "orange"}}"
             />
+
         </div>
         
-        <div class="sequencer">
-            {#each harpRows as row, i}
-                {#each row as note, j}
-                <SequencerStep
-                    on:clicked={handleHarpClick}
-                    instrumentName = "harp"
-                    rowIndex = "{i}"
-                    noteIndex = "{j}"
-                    noteActive = "{note.active}"
-                    noteLive = "{j === beat}"
-                />
+        {#if sequencerVisible}
+            <div class="sequencer">
+                {#each harpRows as row, i}
+                    {#each row as note, j}
+                        <SequencerStep
+                            on:clicked={handleHarpClick}
+                            instrumentName = "harp"
+                            rowIndex = "{i}"
+                            noteIndex = "{j}"
+                            noteActive = "{note.active}"
+                            noteLive = "{j === beat}"
+                        />
+                    {/each}
                 {/each}
-            {/each}
-            {#each drumRows as row, i}
-                {#each row as note, j}
-                <SequencerStep
-                    on:clicked={handleDrumClick}
-                    instrumentName = {note.instrumentName}
-                    rowIndex = "{i}"
-                    noteIndex = "{j}"
-                    noteActive = "{note.active}"
-                    noteLive = "{j === beat}"
-                />
+                {#each drumRows as row, i}
+                    {#each row as note, j}
+                        <SequencerStep
+                            on:clicked={handleDrumClick}
+                            instrumentName = {note.instrumentName}
+                            rowIndex = "{i}"
+                            noteIndex = "{j}"
+                            noteActive = "{note.active}"
+                            noteLive = "{j === beat}"
+                        />
+                    {/each}
                 {/each}
-            {/each}
-        </div>
+            </div>
+        {:else}
+        
+            <select class="scale-menu" bind:value={selectedScale}>
+                {#each scales as option}
+                    <option value={option}>{option.label}</option>
+                {/each}	
+            </select>
+     
+        {/if}
 
         <div class="bpm-controls">
             <label class="bpm-value" for="bpm" >{bpm} BPM</label>
@@ -251,6 +266,14 @@
     }
 
     .sequencer {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 5px;
+        margin: auto;
+        justify-content: center;
+    }
+
+    .scale-menu {
         display: grid;
         grid-template-columns: repeat(8, 1fr);
         gap: 5px;

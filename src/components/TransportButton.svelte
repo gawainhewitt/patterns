@@ -29,7 +29,7 @@
         /* padding-bottom: 10%; */
         border: 1px solid #ccc;
         border-radius: 7px;
-        margin: 0 1em 1em 0;
+        margin: 0 0.2em;
         display: flex;
         align-items: center;
         justify-content: center;

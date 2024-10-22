@@ -26,7 +26,7 @@
     <div class="screen-reader-description">
         {instrumentName + ": row " + rowIndex + ": step " + noteIndex} 
     </div>
-</button>
+</button> 
 
 <style>
     .note{
