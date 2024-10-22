@@ -249,7 +249,7 @@
     }
     
     
-    @media (min-width: 1920px) {
+    @media (min-width: 2000px) {
         .container {
                 max-width: 900px;
                 height: 95vh;
