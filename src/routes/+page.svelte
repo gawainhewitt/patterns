@@ -243,7 +243,7 @@
     }
 
     .container {
-        max-width: 400px;
+        max-width: 600px;
         height: 95vh;
         margin-inline: auto;  
     }
