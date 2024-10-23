@@ -21,7 +21,7 @@
     on:click|preventDefault|stopPropagation={handleButton}
     id="row{rowIndex}note{noteIndex}"
     class=" note {noteActive ? 'active' : ''}" class:live={noteLive}
-    style="background-image: url('{instrumentName}-pink.png')"
+    style="background-image: url('images/{instrumentName}-pink.png')"
     >
     <div class="screen-reader-description">
         {instrumentName + ": row " + rowIndex + ": step " + noteIndex} 

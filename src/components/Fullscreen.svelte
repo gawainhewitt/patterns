@@ -1,5 +1,7 @@
 <script>
 
+  import { onMount } from "svelte";
+
     let isFull = false;
     let fsContainer = null;
   
@@ -31,6 +33,19 @@
       ).bind(fsContainer);
       requestFS();
     };
+
+    onMount(() => {
+    // Add the icon stylesheet dynamically
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/icon?family=Material+Icons";
+    document.head.appendChild(link);
+
+    // remove the link when component is unmounted
+    return () => {
+      link.parentNode.removeChild(link);
+    };
+  });
   
     const fsToggle = () => {
       if (!fullscreenSupport) return;
@@ -58,34 +73,9 @@
   <div class="fs" class:isFull bind:this={fsContainer}>
     {#if fullscreenSupport}
       <button on:click={fsToggle}>
-        <i class="material-icons">{icon}</i>
+        <i class="material-icons md-36">{icon}</i>
       </button>
     {/if}
     <slot {isFull} />
   </div>
   
-  <style>
-    @font-face {
-        font-family: 'Material Icons';
-        font-style: normal;
-        font-weight: 400;
-        src: url('material-icons.woff2') format('woff2');
-    }
-
-    .material-icons {
-        font-family: 'Material Icons';
-        font-weight: normal;
-        font-style: normal;
-        font-size: 24px;
-        line-height: 1;
-        letter-spacing: normal;
-        text-transform: none;
-        display: inline-block;
-        white-space: nowrap;
-        word-wrap: normal;
-        direction: ltr;
-        font-feature-settings: "liga";
-        -webkit-font-feature-settings: 'liga';
-        -webkit-font-smoothing: antialiased;
-    }
-  </style>
