@@ -10,11 +10,14 @@
     let length = 8;
     let sequencerVisible = true;
     let scales = [ 
-        {label: "cMajor", value: ["C4", "D4", "E4", "F4", "G4", "A4", "B4"]},
-        {label: "gMinor", value: ["G3", "A3", "Bb3", "C4", "D4", "Eb4", "F4"]},
+        {label: "Major", value: [0, 2, 4, 5, 7, 9, 10]},
+        {label: "Minor", value: ["G3", "A3", "Bb3", "C4", "D4", "Eb4", "F4"]},
         {label: "daft", value: ["C4", "D4", "E4", "G3", "A3", "Bb3", "E4"]}
     ];
-    let selectedScale = scales[0];
+    let keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+    let selectedKey = keys[0];
+    let selectedScale = scales[1];
 
     let scaleOfNotes = scales[0].value;
 
@@ -149,6 +152,11 @@
         myTransport.bpm.value = bpm;
     }
 
+    let isFull = false;
+    let fsContainer = null;
+
+    const noop = () => {};
+
     const fullscreenSupport = !!(
       document.fullscreenEnabled ||
       document.webkitFullscreenEnabled ||
@@ -156,8 +164,6 @@
       document.msFullscreenEnabled ||
       false
     );
-
-    
   
     const requestFullscreen = () => {
       const requestFS = (
@@ -182,12 +188,6 @@
       link.parentNode.removeChild(link);
     };
   });
-
-
-  let isFull = false;
-  let fsContainer = null;
-
-  const noop = () => {};
 
   const fsToggle = () => {
       if (!fullscreenSupport) return;
@@ -293,7 +293,13 @@
             </div>
         {:else}
         
-            <select class="scale-menu" bind:value={selectedScale}>
+            <select class="select-menu" bind:value={selectedKey}>
+                {#each keys as option}
+                    <option value={option}>{option}</option>
+                {/each}	
+            </select>
+
+            <select class="select-menu" bind:value={selectedScale}>
                 {#each scales as option}
                     <option value={option}>{option.label}</option>
                 {/each}	
@@ -341,7 +347,8 @@
     }
 
     button {
-        margin: 0 1em;
+        margin: 0 1em 0 0.5em;
+        font-size: 2em;
     }
 
     .sequencer {
@@ -352,7 +359,7 @@
         justify-content: center;
     }
 
-    .scale-menu {
+    .select-menu {
         display: grid;
         grid-template-columns: repeat(8, 1fr);
         gap: 5px;
