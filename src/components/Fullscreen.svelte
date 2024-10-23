@@ -69,7 +69,7 @@
         font-family: 'Material Icons';
         font-style: normal;
         font-weight: 400;
-        src: url(flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+        src: url(material-icons.woff2) format('woff2');
     }
 
     .material-icons {
