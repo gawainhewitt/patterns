@@ -7,21 +7,22 @@
     
     import * as Sound from "$lib/sound.js"
     import { FullScreen } from "$lib/fullScreen.js"
+	import { scale } from "svelte/transition";
 
     const fullScreen = new FullScreen(false, null);
   
     let bpm = 99;
     let beat = -1;
     let isPlaying = false;
-    let length = 8;
+    const sequenceLength = 8;
     let sequencerVisible = true;
     
     let scales = [ 
-        {label: "Major", notes: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]},
-        {label: "Minor", notes: [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19]},
-        {label: "Pentatonic", notes: [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26]},
-        {label: "majorBlues", notes: [0, 2, 3, 4, 7, 9, 12, 14, 15, 16, 19, 21]},
-        {label: "minorBlues", notes: [0, 3, 5, 6, 7, 10, 12, 15, 17, 18, 19, 22]}
+        {label: "Major", notes: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19], index: 0},
+        {label: "Minor", notes: [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19], index: 1},
+        {label: "Pentatonic", notes: [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26], index: 2},
+        {label: "majorBlues", notes: [0, 2, 3, 4, 7, 9, 12, 14, 15, 16, 19, 21], index: 3},
+        {label: "minorBlues", notes: [0, 3, 5, 6, 7, 10, 12, 15, 17, 18, 19, 22], index: 4}
     ];
     let keys = [{key: "C", index: 0}, {key: "C#", index: 1}, {key: "D", index: 2}, {key: "D#", index: 3}, {key: "E", index: 4}, {key: "F", index: 5}, {key: "F#", index: 6}, {key: "G", index: 7}, {key: "G#", index: 8}, {key: "A", index: 9}, {key: "A#", index: 10}, {key: "B", index: 11}];
     let allTheNotes = [
@@ -34,31 +35,32 @@
                         "C8", "C#8", "D8", "D#8", "E8", "F8", "F#8", "G8", "G#8", "A8", "A#8", "B8"
                     ];
 
+    
+    let octaves = [0, 1, 2, 3, 4]
     let selectedKey = keys[0];
     let selectedScale = scales[0];
-    let octaves = [0, 1, 2, 3, 4]
     let selectedOctave = octaves[2];
 
     let scaleOfNotes = scales[0].notes;
 
     let harpRows = [
-        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[6], active: false})), 
-        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[5], active: false})),
-        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
-        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
-        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
-        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
-        Array.from({ length }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
+        Array.from({ length: sequenceLength }, (_, i) => ({ note: scaleOfNotes[6], active: false})), 
+        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[5], active: false})),
+        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
+        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
+        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
+        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
+        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
     ];
 
     let drumRows = [
-        Array.from({ length }, (_, i) => ({ note: "E4", instrumentName: "woodblock", active: false})),
-        Array.from({ length }, (_, i) => ({ note: "D4", instrumentName: "snare", active: false})),
-        Array.from({ length }, (_, i) => ({ note: "C4", instrumentName: "kick", active: false})),
+        Array.from({ length: sequenceLength  }, (_, i) => ({ note: "E4", instrumentName: "woodblock", active: false})),
+        Array.from({ length: sequenceLength  }, (_, i) => ({ note: "D4", instrumentName: "snare", active: false})),
+        Array.from({ length: sequenceLength  }, (_, i) => ({ note: "C4", instrumentName: "kick", active: false})),
     ]
 
     Sound.myTransport.scheduleRepeat((time) => {
-        beat = (beat+1) % length;
+        beat = (beat+1) % sequenceLength;
         harpRows.forEach((row, index) => {
             let note = row[beat];
             if (note.active) {  
@@ -134,7 +136,7 @@
     }
 
     const handleSave = () => {
-        console.log("save");
+        saveSeq();
     }
 
     
@@ -166,6 +168,136 @@
 
     $: icon = fullScreen.isFull ? "fullscreen_exit" : "fullscreen";
 
+
+    // save functionality
+
+    let url_ob = new URL(document.URL);
+    let saveText;
+
+    const handleSaveRestore = (row, step) => {
+        console.log(`row ${row} step ${step}`)
+        if(row < harpRows.length){
+            console.log(`restoredetail ${row} ${step}`);
+            harpRows[row][step].active = true;
+        } else {
+            let drumRow = row - harpRows.length;
+            console.log(`drumrow ${drumRow}`)
+            drumRows[drumRow][step].active = true;
+        }
+    }
+
+    function saveSeq() {
+        let seqRowsArray = new Array;
+
+        for(let i = 0; i < harpRows.length; i++) {
+            seqRowsArray[i] = new Array;
+            for(let j = 0; j < sequenceLength; j++) {
+                seqRowsArray[i][j] = + harpRows[i][j].active;
+            }
+        }
+        for(let i = harpRows.length; i < harpRows.length + drumRows.length; i++) {
+            seqRowsArray[i] = new Array;
+            for(let j = 0; j < sequenceLength; j++) {
+                seqRowsArray[i][j] = + drumRows[i-harpRows.length][j].active;
+            }
+        }
+
+        let simplifiedArray= new Array;
+
+        for(let i = 0; i < seqRowsArray.length; i++) {
+            simplifiedArray[i] = seqRowsArray[i].join('');
+        }
+
+
+        let seqHex = new Array;
+        for(let i = 0; i < simplifiedArray.length; i++){
+            seqHex[i] = parseInt(simplifiedArray[i], 2).toString(16);
+        }
+
+        let hexToSave = '';
+        for(let i = 0; i < simplifiedArray.length; i++){
+            hexToSave = `${hexToSave}${seqHex[i]}_`;
+        }
+
+        let bpmToSave = parseInt(bpm, 10).toString(16);
+
+        hexToSave = `${hexToSave}_${bpmToSave}_${selectedKey.index}_${selectedScale.index}_${selectedOctave}`;
+        url_ob.hash = `#${hexToSave}`;
+        let new_url = url_ob.href;
+        document.location.href = new_url;
+        saveText = new_url;
+        console.log(saveText);
+    }
+
+    function retrieveSavedWork() {
+        if(window.location.hash){
+            let savedWork = url_ob.hash; //retrieve saved work from url
+            let savedWorkNoHash = savedWork.replace('#', ''); // remove the hash from it leaving only the number
+            let savedWorkAsArray = savedWorkNoHash.split('_');
+            let seqRows = harpRows.length + drumRows.length;
+    
+            console.log(savedWorkAsArray);
+    
+            let savedseqRowBinary = new Array;
+            
+            for(let i = 0; i < seqRows; i++){
+                savedseqRowBinary[i] = (parseInt(savedWorkAsArray[i], 16).toString(2)); // convert seq row to binary
+            }
+            
+            let savedseqRow = new Array;
+            
+            for(let i = 0; i < seqRows; i++){
+            savedseqRow[i] = savedseqRowBinary[i].split(''); // convert to array
+            console.log(`seq row${i} ${savedseqRow[i]}`);
+            }
+            
+            let savedTempo = (parseInt(savedWorkAsArray[seqRows+1], 16).toString(10));// convert tempo to decimal
+            
+            console.log(`saved tempo  ${savedTempo}`);
+    
+            let savedKey = (parseInt(savedWorkAsArray[seqRows+2], 16).toString(10));
+    
+            console.log(`saved key = ${savedKey}`)
+    
+            let savedScale = (parseInt(savedWorkAsArray[seqRows+3], 16).toString(10));
+    
+            console.log(`saved scale = ${savedScale}`)
+    
+            let savedOctave = (parseInt(savedWorkAsArray[seqRows+4], 16).toString(10));
+    
+            console.log(`saved octave = ${savedOctave}`)
+    
+            selectedKey = keys[savedKey];
+            selectedScale = scales[savedScale];
+            selectedOctave = octaves[savedOctave];
+    
+            for(let i = 0; i < seqRows; i++){
+                console.log(`am i here? seqRow ${i}`);
+                for(let j = sequenceLength - 1; j >= 0 ; j--){
+                    let a = [];
+                    console.log(`savedseqRow ${i} = ${savedseqRow[i]}`);
+                    if(savedseqRow[i].length > 0){
+                        a[j] = savedseqRow[i].pop();
+                        }else{
+                        a[j] = 0;
+                        }
+                    if(a[j] === "1"){ // you need to put "" around the number because you are comparing a number with a string
+                        handleSaveRestore(i, j);
+                    }
+                }
+            }
+    
+            if(isNaN(savedTempo) === false){
+                bpm = savedTempo;
+            }
+
+        }
+
+    }
+
+    retrieveSavedWork();
+
+    console.log(harpRows);
 
 </script>
 
