@@ -1,66 +1,45 @@
 <script>
-    import * as Tone from "tone";
+      
 	import SequencerStep from "../components/SequencerStep.svelte";
 	import TransportButton from "../components/TransportButton.svelte";
     import { onMount } from "svelte";
 
+    
+    import * as Sound from "$lib/sound.js"
+    import { FullScreen } from "$lib/fullScreen.js"
+
+    const fullScreen = new FullScreen(false, null);
+  
     let bpm = 99;
     let beat = -1;
     let isPlaying = false;
     let length = 8;
     let sequencerVisible = true;
+    
     let scales = [ 
-        {label: "Major", value: [0, 2, 4, 5, 7, 9, 10]},
-        {label: "Minor", value: ["G3", "A3", "Bb3", "C4", "D4", "Eb4", "F4"]},
-        {label: "daft", value: ["C4", "D4", "E4", "G3", "A3", "Bb3", "E4"]}
+        {label: "Major", notes: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19]},
+        {label: "Minor", notes: [0, 2, 3, 5, 7, 8, 10, 12, 14, 15, 17, 19]},
+        {label: "Pentatonic", notes: [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26]},
+        {label: "majorBlues", notes: [0, 2, 3, 4, 7, 9, 12, 14, 15, 16, 19, 21]},
+        {label: "minorBlues", notes: [0, 3, 5, 6, 7, 10, 12, 15, 17, 18, 19, 22]}
     ];
-    let keys = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    let keys = [{key: "C", index: 0}, {key: "C#", index: 1}, {key: "D", index: 2}, {key: "D#", index: 3}, {key: "E", index: 4}, {key: "F", index: 5}, {key: "F#", index: 6}, {key: "G", index: 7}, {key: "G#", index: 8}, {key: "A", index: 9}, {key: "A#", index: 10}, {key: "B", index: 11}];
+    let allTheNotes = [
+                        "C2", "C#2", "D2", "D#2", "E2", "F2", "F#2", "G2", "G#2", "A2", "A#2", "B2",
+                        "C3", "C#3", "D3", "D#3", "E3", "F3", "F#3", "G3", "G#3", "A3", "A#3", "B3",
+                        "C4", "C#4", "D4", "D#4", "E4", "F4", "F#4", "G4", "G#4", "A4", "A#4", "B4",
+                        "C5", "C#5", "D5", "D#5", "E5", "F5", "F#5", "G5", "G#5", "A5", "A#5", "B5",
+                        "C6", "C#6", "D6", "D#6", "E6", "F6", "F#6", "G6", "G#6", "A6", "A#6", "B6",
+                        "C7", "C#7", "D7", "D#7", "E7", "F7", "F#7", "G7", "G#7", "A7", "A#7", "B7",
+                        "C8", "C#8", "D8", "D#8", "E8", "F8", "F#8", "G8", "G#8", "A8", "A#8", "B8"
+                    ];
 
     let selectedKey = keys[0];
-    let selectedScale = scales[1];
+    let selectedScale = scales[0];
+    let octaves = [0, 1, 2, 3, 4]
+    let selectedOctave = octaves[2];
 
-    let scaleOfNotes = scales[0].value;
-
-    const harpSampler = new Tone.Sampler({
-        urls: {
-            C4: "Harp-C4.mp3",
-        },
-        baseUrl: "/audio/",
-        onload: () => {
-        }
-    });
-
-    const drumSampler = new Tone.Sampler({
-        urls: {
-            C4: "kick.mp3",
-            D4: "snare.mp3",
-            E4: "woodblock.mp3"
-        },
-        baseUrl: "/audio/",
-        onload: () => {
-        }
-    }).toDestination();
-
-    drumSampler.set({
-      volume: -12
-    });
-
-    const reverb = new Tone.Reverb({
-      decay: 3,
-      predelay: 0,
-      wet: 0.5
-    }).toDestination();
-
-    harpSampler.connect(reverb);
-
-    harpSampler.set({
-      release: 8,
-      volume: -12
-    });
-
-
-    Tone.BaseContext.lookAhead = 0.5;
-
+    let scaleOfNotes = scales[0].notes;
 
     let harpRows = [
         Array.from({ length }, (_, i) => ({ note: scaleOfNotes[6], active: false})), 
@@ -78,26 +57,47 @@
         Array.from({ length }, (_, i) => ({ note: "C4", instrumentName: "kick", active: false})),
     ]
 
-
-    $: beatIndicators = Array.from({ length: length }, (_, i) => i);
-
-    const myTransport = Tone.getTransport();
-
-    myTransport.scheduleRepeat((time) => {
+    Sound.myTransport.scheduleRepeat((time) => {
         beat = (beat+1) % length;
         harpRows.forEach((row, index) => {
             let note = row[beat];
             if (note.active) {  
-                harpSampler.triggerAttackRelease(note.note, "8n", time);
+                Sound.harpSampler.triggerAttackRelease(note.note, "8n", time);
             }
         });
         drumRows.forEach((row, index) => {
             let note = row[beat];
             if (note.active) {
-                drumSampler.triggerAttackRelease(note.note, "8n", time);
+                Sound.drumSampler.triggerAttackRelease(note.note, "8n", time);
             }
         });
     }, "16n");
+
+    const changeScale = (key, scale, octave) => {
+        let octaveOffset = octave * 12;
+        
+        let whichNote = harpRows.length-1;
+            harpRows.forEach((row, index) => {
+                let keyOffset = key.index;
+                let scaleNote = scale.notes[whichNote];
+                let formattedNoted = allTheNotes[scaleNote+keyOffset+octaveOffset];
+                row.forEach((note) => note.note = formattedNoted)
+                whichNote = whichNote -1;
+            })
+    }
+
+    changeScale(selectedKey, selectedScale, selectedOctave);
+
+    $: changeScale(selectedKey, selectedScale, selectedOctave);
+
+   
+    $: if (isPlaying) {
+        Sound.myTransport.bpm.value = bpm;
+    }
+
+
+
+    // event handlers
 
     const handleHarpClick = (element) => {
         const rowIndex = element.detail.rowIndex;
@@ -113,14 +113,14 @@
     };
 
     const handlePlayClick = (e) => {
-        if (!isPlaying) Tone.start();
-        myTransport.bpm.value = bpm;
-        myTransport.start();
+        if (!isPlaying) Sound.startSound();
+        Sound.myTransport.bpm.value = bpm;
+        Sound.myTransport.start();
         isPlaying = true;
     };
 
     const handleStopClick = (e) => {
-        myTransport.stop();
+        Sound.myTransport.stop();
         isPlaying = false;
     };
 
@@ -133,102 +133,49 @@
         harpRows = harpRows;
     }
 
-    const changeScale = (scale) => {
-        console.log(scale.label);
-        let whichNote = harpRows.length-1;
-            harpRows.forEach((row, index) => {
-                row.forEach((note) => note.note = scale.value[whichNote])
-                whichNote = whichNote -1;
-            })
-    }
-
-    $: changeScale(selectedScale);
-
     const handleSave = () => {
         console.log("save");
     }
 
-    $: if (isPlaying) {
-        myTransport.bpm.value = bpm;
-    }
+    
 
-    let isFull = false;
-    let fsContainer = null;
-
-    const noop = () => {};
-
-    const fullscreenSupport = !!(
-      document.fullscreenEnabled ||
-      document.webkitFullscreenEnabled ||
-      document.mozFullScreenEnabled ||
-      document.msFullscreenEnabled ||
-      false
-    );
-  
-    const requestFullscreen = () => {
-      const requestFS = (
-        fsContainer.requestFullscreen ||
-        fsContainer.mozRequestFullScreen ||
-        fsContainer.webkitRequestFullscreen ||
-        fsContainer.msRequestFullscreen ||
-        noop
-      ).bind(fsContainer);
-      requestFS();
-    };
+    // fullscreen stuff that needs to stay in the app as it effects the reactivity. If it is changed within the class then it doesn't communicate that externally
 
     onMount(() => {
-    // Add the icon stylesheet dynamically
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "https://fonts.googleapis.com/icon?family=Material+Icons";
-    document.head.appendChild(link);
+        // Add the icon stylesheet dynamically
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "https://fonts.googleapis.com/icon?family=Material+Icons";
+        document.head.appendChild(link);
 
-    // remove the link when component is unmounted
-    return () => {
-      link.parentNode.removeChild(link);
-    };
-  });
+        // remove the link when component is unmounted
+        return () => {
+            link.parentNode.removeChild(link);
+        };
+    });
 
-  const fsToggle = () => {
-      if (!fullscreenSupport) return;
-  
-      if (isFull) {
-        exitFullscreen();
-      } else {
-        requestFullscreen(fsContainer);
-      }
-    };
-
-    const exitFullscreen = (
-      document.exitFullscreen ||
-      document.mozCancelFullScreen ||
-      document.webkitExitFullscreen ||
-      document.msExitFullscreen ||
-      noop
-    ).bind(document);
-
-  $: icon = isFull ? "fullscreen_exit" : "fullscreen";
-
-  function fullscreenchanged() {
+    const fullscreenchanged = () => {
         if (document.fullscreenElement) {
-            isFull = true;
+            fullScreen.isFull = true;
         } else {
-            isFull = false;
+            fullScreen.isFull = false;
         }
     }
 
-    addEventListener("fullscreenchange", fullscreenchanged)
+    addEventListener("fullscreenchange", fullscreenchanged);
+
+    $: icon = fullScreen.isFull ? "fullscreen_exit" : "fullscreen";
 
 
 </script>
 
-<div class="fs" class:isFull bind:this={fsContainer}>
+<div class="fs" bind:this={fullScreen.fsContainer}>
 
     <div class="container">
         <div class="bpm-controls">
             
-            {#if fullscreenSupport}
-                <button on:click={fsToggle}>
+            {#if fullScreen.fullscreenSupport}
+                <button on:click={fullScreen.fsToggle}>
                     <i class="material-icons md-36">{icon}</i>
                 </button>
             {/if}
@@ -293,17 +240,32 @@
             </div>
         {:else}
         
-            <select class="select-menu" bind:value={selectedKey}>
-                {#each keys as option}
-                    <option value={option}>{option}</option>
-                {/each}	
-            </select>
+            <div class="select-div">
+                <label class="select-label" for="keymenu">Change Key</label>
 
-            <select class="select-menu" bind:value={selectedScale}>
-                {#each scales as option}
-                    <option value={option}>{option.label}</option>
-                {/each}	
-            </select>
+                <select id="keymenu" class="select-menu" bind:value={selectedKey}>
+                    {#each keys as option}
+                        <option value={option}>{option.key}</option>
+                    {/each}	
+                </select>
+            
+                <label class="select-label" for="scalemenu">Change Scale</label>
+
+                <select id="scalemenu" class="select-menu" bind:value={selectedScale}>
+                    {#each scales as option}
+                        <option value={option}>{option.label}</option>
+                    {/each}	
+                </select>
+
+                <label class="select-label" for="octavemenu">Change Octave</label>
+
+                <select id="octavemenu" class="select-menu" bind:value={selectedOctave}>
+                    {#each octaves as option}
+                        <option value={option}>{option}</option>
+                    {/each}	
+                </select>
+
+            </div>
      
         {/if}
 
@@ -360,11 +322,25 @@
     }
 
     .select-menu {
-        display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        gap: 5px;
-        margin: auto;
+        margin: 2em;
         justify-content: center;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 1em;
+    }
+
+    .select-label {
+        background-size: 8vw; 
+        margin: 0 1em 1em 0;
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 1em;
+        color: white;
+        text-align: center;
+    }
+
+    .select-div {
+        display: grid;
     }
 
     .bpm-controls {
