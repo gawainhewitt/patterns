@@ -16,7 +16,7 @@
     type="button"
     on:click|preventDefault|stopPropagation={handleButton}
     id="hold"
-    class=" note }" 
+    class="navigation" 
     style="background-image: url('images/{instrumentName}.png')"
     >
     <div class="screen-reader-description">
@@ -25,7 +25,7 @@
 </button> 
 
 <style>
-    .note{
+    .navigation{
         background-color: #ccc;
         width: 100%;
         height: 0;
@@ -34,21 +34,6 @@
         border-radius: 7px;
         background-size: 100%;  
         background-repeat: no-repeat;
-    }
-
-    .active {
-        background-color: #600889;
-        border: 1px solid #600889;
-    }
-
-    .live {
-        background-color: #05f18f;
-        border: 1px solid #05f18f;
-    }
-
-    .active.live {
-        background-color: yellow;
-        border: 1px solid yellow;
     }
 
     .screen-reader-description {
