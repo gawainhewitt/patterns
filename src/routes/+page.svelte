@@ -8,7 +8,6 @@
     
     import * as Sound from "$lib/sound.js"
     import { FullScreen } from "$lib/fullScreen.js"
-	import { scale } from "svelte/transition";
 	
 
     const fullScreen = new FullScreen(false, null);
@@ -179,6 +178,7 @@
         sequencerType = mouseTouchSequencer;
         buildHarpRows(sequencerType);
         changeScale(selectedKey, selectedScale, selectedOctave);
+        fetchQwertyRows = emptyQwertyRows;
         viewState = sequencer;
     }
     
@@ -186,6 +186,7 @@
         sequencerType = qwertySequencer;
         buildHarpRows(sequencerType);
         changeScale(selectedKey, selectedScale, selectedOctave);
+        fetchQwertyRows = qwertyRows;
         viewState = sequencer;
     }
 
@@ -199,9 +200,11 @@
         if(seqType === mouseTouchSequencer){
             harpRows = largeHarpRows;
             drumRows = largeDrumRows;
+            fetchQwertyRows = emptyQwertyRows;
         } else {
             harpRows = qwertyHarpRows;
             drumRows = qwertyDrumRows;
+            fetchQwertyRows = qwertyRows;
         }
     }
     
@@ -376,6 +379,57 @@
 
     }
 
+    const handleKeyDown = (e) => {
+        let key = e.code;
+        console.log(`keydown ${key}`);
+        whichKey(key);
+    };
+
+    const handleKeyUp = (e) => {
+        let key = e.code;
+        
+    };
+
+    const qwertyRows = [  ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8'],
+                        ['KeyQ', 'KeyW', 'KeyE', 'KeyR', 'KeyT', 'KeyY', 'KeyU', 'KeyI'],
+                        ['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyG', 'KeyH', 'KeyJ', 'KeyK'],
+                        ['KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma']];
+
+
+    let emptyQwertyRows = new Array;
+
+    for (let i = 0; i < harpRows.length; i++){
+        emptyQwertyRows[i] = new Array;
+        for(let j = 0; j < sequenceLength; j++){
+            emptyQwertyRows[i][j] = '';
+        }
+    }
+
+    let fetchQwertyRows = emptyQwertyRows;
+
+    const whichKey = (key) => {
+        for (let i = 0; i < qwertyRows.length; i++) {
+            for (let j = 0; j < sequenceLength; j++) {           
+                if (key === qwertyRows[i][j]) {
+                    console.log(i, j)
+                    harpRows[i][j].active = !harpRows[i][j].active;
+                }
+            }
+        }
+        if (key === 'Space') {
+            if (isPlaying){
+                handleStopClick();
+            }else{
+                handlePlayClick();
+            }
+        }
+    };
+
+    
+    document.addEventListener("keydown", handleKeyDown);
+    
+    document.addEventListener("keyup", handleKeyUp);
+    
     retrieveSavedWork();
 </script>
 
@@ -474,6 +528,7 @@
                                 noteIndex = "{j}"
                                 noteActive = "{note.active}"
                                 noteLive = "{j === beat}"
+                                qwerty = "{fetchQwertyRows[i][j]}"
                             />
                         {/each}
                     {/each}

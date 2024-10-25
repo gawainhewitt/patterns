@@ -6,6 +6,13 @@
     export let noteActive;
     export let noteLive;
     export let instrumentName;
+    export let qwerty = '';
+
+    if(qwerty != "Comma"){
+        qwerty = qwerty.slice(-1);
+    }else{
+        qwerty=','
+    }
 
     const dispatch = createEventDispatcher()
 
@@ -22,7 +29,7 @@
     id="row{rowIndex}note{noteIndex}"
     class=" note {noteActive ? 'active' : ''}" class:live={noteLive}
     style="background-image: url('images/{instrumentName}-pink.png')"
-    >
+    ><p class="text">{qwerty}</p>
     <div class="screen-reader-description">
         {instrumentName + ": row " + rowIndex + ": step " + noteIndex} 
     </div>
@@ -63,6 +70,24 @@
         position: absolute;
         white-space: nowrap;
         width: 1px;
+    }
+    .text {
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        color: rgb(8, 8, 8);
+        text-align: center;
+        position:relative; 
+        top: 1rem;
+    }
+    @media (orientation: portrait) {
+        .text {
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        color: rgb(8, 8, 8);
+        text-align: center;
+        position:relative; 
+        top: 0;
+    }
     }
 
 </style>
