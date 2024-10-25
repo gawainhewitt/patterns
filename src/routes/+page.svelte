@@ -143,22 +143,9 @@
     }
 
     const handleCopyURLClick = () => {
-        console.log("copy URL");
-        if (!navigator.clipboard) {
-            let copyText = document.getElementById("save-text");
-
-            /* Select the text field */
-            copyText.select();
-            copyText.setSelectionRange(0, 99999); /* For mobile devices */
-
-            /* Copy the text inside the text field */
-            document.execCommand("copy");
-            alert("Copied the URL: " + saveText)
-        } else {
-            navigator.clipboard.writeText(saveText);
-            alert("Copied the text: " + saveText);
-        }
-       
+        navigator.clipboard.writeText(saveText);
+        alert("Copied the text: " + saveText);
+        
         viewState = 2;
     }
 
@@ -449,10 +436,17 @@
 
                 <h3 class="saved-text" id="save-text">{saveText}</h3>
                 
-                <TransportButton 
-                on:clicked={handleCopyURLClick}
-                buttonName = "{{name: "Copy URL To Clipboard", colour: "blue"}}"
-                />
+                {#if navigator.clipboard}
+                    <TransportButton 
+                    on:clicked={handleCopyURLClick}
+                    buttonName = "{{name: "Copy URL To Clipboard", colour: "blue"}}"
+                    />
+                {:else}
+                    <TransportButton 
+                    on:clicked={handleSave}
+                    buttonName = "{{name: "Back", colour: "blue"}}"
+                    />
+                {/if}
             </div>
      
         {/if}
