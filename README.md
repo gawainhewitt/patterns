@@ -45,4 +45,4 @@ timing of graphics and sound fixed
 Scale starts on root note
 
 
-http://localhost:5173/#0_4_81_0_20_0_8_44_22_88__63_0_0_2
+http://localhost:5173/#0_4_81_0_20_0_8_44_22_88__76_2_2_1

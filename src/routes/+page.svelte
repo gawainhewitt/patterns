@@ -15,7 +15,7 @@
     let beat = -1;
     let isPlaying = false;
     const sequenceLength = 8;
-    let sequencerVisible = true;
+    let viewState = 2; // 0 = home, 1 = info; 2 = sequencer; 4 = save
     
     let scales = [ 
         {label: "Major", notes: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19], index: 0},
@@ -97,8 +97,6 @@
         Sound.myTransport.bpm.value = bpm;
     }
 
-
-
     // event handlers
 
     const handleHarpClick = (element) => {
@@ -127,17 +125,44 @@
     };
 
     const handleSettingsClick = (e) => {
-        if(sequencerVisible){
-            sequencerVisible = false;
+        if(viewState === 2){
+            viewState = 3;
         } else {
-            sequencerVisible = true;
+            viewState = 2;
         }
         harpRows = harpRows;
     }
 
     const handleSave = () => {
         saveSeq();
+        if(viewState === 4){
+            viewState = 2;
+        } else {
+            viewState = 4;
+        }
     }
+
+    const handleCopyURLClick = () => {
+        console.log("copy URL");
+        if (!navigator.clipboard) {
+            let copyText = document.getElementById("save-text");
+
+            /* Select the text field */
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+            /* Copy the text inside the text field */
+            document.execCommand("copy");
+            alert("Copied the URL: " + saveText)
+        } else {
+            navigator.clipboard.writeText(saveText);
+            alert("Copied the text: " + saveText);
+        }
+       
+        viewState = 2;
+    }
+
+    
 
     
 
@@ -173,6 +198,12 @@
 
     let url_ob = new URL(document.URL);
     let saveText;
+
+    const handleClearSavedWorkClick = () => {
+        console.log("baffled");
+        document.location.href = '';
+        saveText = new_url;
+    }
 
     const handleSaveRestore = (row, step) => {
         console.log(`row ${row} step ${step}`)
@@ -312,15 +343,15 @@
                 </button>
             {/if}
 
-            {#if sequencerVisible}
+            {#if viewState === 3}
                 <TransportButton 
                 on:clicked={handleSettingsClick}
-                buttonName = "{{name: "Settings", colour: "powderblue"}}"
+                buttonName = "{{name: "Back", colour: "powderblue"}}"
                 />
             {:else}
                 <TransportButton 
                 on:clicked={handleSettingsClick}
-                buttonName = "{{name: "Back", colour: "grey"}}"
+                buttonName = "{{name: "Settings", colour: "grey"}}"
                 />
             {/if}
 
@@ -336,14 +367,21 @@
                 />
             {/if}
 
-            <TransportButton 
-            on:clicked={handleSave}
-            buttonName = "{{name: "Save", colour: "orange"}}"
-            />
+            {#if viewState === 4}
+                <TransportButton 
+                on:clicked={handleSave}
+                buttonName = "{{name: "Back", colour: "orange"}}"
+                />
+            {:else}
+                <TransportButton 
+                on:clicked={handleSave}
+                buttonName = "{{name: "Save", colour: "orange"}}"
+                />
+            {/if}
 
         </div>
         
-        {#if sequencerVisible}
+        {#if viewState === 2}
             <div class="sequencer">
                 {#each harpRows as row, i}
                     {#each row as note, j}
@@ -370,7 +408,7 @@
                     {/each}
                 {/each}
             </div>
-        {:else}
+        {:else if viewState === 3}
         
             <div class="select-div">
                 <label class="select-label" for="keymenu">Change Key</label>
@@ -397,6 +435,24 @@
                     {/each}	
                 </select>
 
+                <TransportButton 
+                on:clicked={handleClearSavedWorkClick}
+                buttonName = "{{name: "Clear Saved Work", colour: "Red"}}"
+                />
+
+            </div>
+
+        {:else if viewState === 4}
+            
+            <div class="save-text-box">
+                <h3 class="saved-text">Share this URL to share your work.</h3>
+
+                <h3 class="saved-text" id="save-text">{saveText}</h3>
+                
+                <TransportButton 
+                on:clicked={handleCopyURLClick}
+                buttonName = "{{name: "Copy URL To Clipboard", colour: "blue"}}"
+                />
             </div>
      
         {/if}
@@ -405,7 +461,6 @@
             <label class="bpm-value" for="bpm" >{bpm} BPM</label>
             <input class="bpm-slider" type="range" id="bpm" min="40" max="170" bind:value={bpm} />
         </div>
-
     
     </div>
 </div>
@@ -443,6 +498,19 @@
     button {
         margin: 0 1em 0 0.5em;
         font-size: 2em;
+    }
+
+    .save-text-box {
+        margin: 5%;
+    }
+
+    .saved-text {
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: bold;
+        font-size: 1em;
+        color: white;
+        text-align: center;
+        overflow-wrap: break-word;
     }
 
     .sequencer {
