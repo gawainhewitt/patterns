@@ -44,5 +44,5 @@ bug list
 timing of graphics and sound fixed
 Scale starts on root note
 
-
-http://localhost:5173/#0_4_81_0_20_0_8_44_22_88__76_2_2_1
+qwerty saved test http://localhost:5173/#82_8_42_0__53_4_2_1_1
+mouse saved test http://localhost:5173/#80_10_40_4_10_0_2_21_0_84__48_9_1_1_0 

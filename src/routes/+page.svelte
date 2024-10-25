@@ -23,6 +23,9 @@
     let settings = 3;
     let save = 4;
     let viewState = home;
+    let mouseTouchSequencer = 0;
+    let qwertySequencer = 1;
+    let sequencerType;
     
     let scales = [ 
         {label: "Major", notes: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19], index: 0},
@@ -87,7 +90,6 @@
         harpRows.forEach((row, index) => {
             let note = row[beat];
             if (note.active) {  
-                console.log(note.note)
                 Sound.harpSampler.triggerAttackRelease(note.note, "8n", time);
             }
         });
@@ -174,15 +176,15 @@
     }
 
     const handleLargeSequencerClick = () => {
-        harpRows = largeHarpRows;
-        drumRows = largeDrumRows;
+        sequencerType = mouseTouchSequencer;
+        buildHarpRows(sequencerType);
         changeScale(selectedKey, selectedScale, selectedOctave);
         viewState = sequencer;
     }
     
     const handleKeyboardSequencerClick = () => {
-        harpRows = qwertyHarpRows;
-        drumRows = qwertyDrumRows;
+        sequencerType = qwertySequencer;
+        buildHarpRows(sequencerType);
         changeScale(selectedKey, selectedScale, selectedOctave);
         viewState = sequencer;
     }
@@ -192,6 +194,16 @@
         saveText = new_url;
     }
 
+    const buildHarpRows = (seqType)  => {
+        console.log(`buildHarpRows = ${seqType}`)
+        if(seqType === mouseTouchSequencer){
+            harpRows = largeHarpRows;
+            drumRows = largeDrumRows;
+        } else {
+            harpRows = qwertyHarpRows;
+            drumRows = qwertyDrumRows;
+        }
+    }
     
 
     
@@ -273,7 +285,9 @@
 
         let bpmToSave = parseInt(bpm, 10).toString(16);
 
-        hexToSave = `${hexToSave}_${bpmToSave}_${selectedKey.index}_${selectedScale.index}_${selectedOctave}`;
+        console.log(`sequencer type to save is ${sequencerType}`);
+
+        hexToSave = `${hexToSave}_${bpmToSave}_${selectedKey.index}_${selectedScale.index}_${selectedOctave}_${sequencerType}`;
         url_ob.hash = `#${hexToSave}`;
         let new_url = url_ob.href;
         document.location.href = new_url;
@@ -283,10 +297,34 @@
 
     function retrieveSavedWork() {
         if(window.location.hash){
+            viewState = sequencer;
             let savedWork = url_ob.hash; //retrieve saved work from url
             let savedWorkNoHash = savedWork.replace('#', ''); // remove the hash from it leaving only the number
             let savedWorkAsArray = savedWorkNoHash.split('_');
+            
+            let savedSequencerType = savedWorkAsArray.pop();
+
+            let savedSequencerTypeAsInt = parseInt(savedSequencerType);
+
+            console.log(typeof(savedSequencerTypeAsInt))
+
+            buildHarpRows(savedSequencerTypeAsInt);
+
+            console.log(`saved sequencer type = ${savedSequencerType}`)
+
+            console.log(`saved work as an array = ${savedWorkAsArray}`)
+
+            // i think it's passing the number to the function as a string
+
+
             let seqRows = harpRows.length + drumRows.length;
+            
+            console.log(`seqRows = ${seqRows}`);
+            // the issue here is that seqrows is set before we know how big it should be. 
+
+            // so can we get this information from the thing first?
+
+            
        
             let savedseqRowBinary = new Array;
             
@@ -307,6 +345,10 @@
             let savedScale = (parseInt(savedWorkAsArray[seqRows+3], 16).toString(10));
         
             let savedOctave = (parseInt(savedWorkAsArray[seqRows+4], 16).toString(10));
+
+            // let savedSequencerType = (parseInt(savedWorkAsArray[seqRows+5], 16).toString(10));
+
+            console.log(`saved octave = ${savedOctave}`);
       
             selectedKey = keys[savedKey];
             selectedScale = scales[savedScale];
@@ -341,11 +383,18 @@
 
     <div class="container">
         {#if viewState === home}
-            <h3 class="saved-text">home</h3>
+            <img src="/images/orchlablogo.png" alt="Orchlab logo" class="orchlab-logo">
+
+            <h1 class="title common-text">Patterns</h1>
+
+            <p class="body common-text">
+                Click on the buttons below to begin.
+            </p>
+            
             <div class="navigation-buttons">
                 <NavigationButton
                     on:clicked={handleLargeSequencerClick}
-                    instrumentName = "large-sequencer"
+                    instrumentName = "mouse-and-touch-sequencer"
                 />
                 <NavigationButton
                     on:clicked={handleKeyboardSequencerClick}
@@ -353,10 +402,27 @@
                 />
             </div>
 
+            <p class="body common-text">
+                Instructions: <br><br>
+                Click Play to start. <br><br>
+                Click on the buttons to switch them off or on. <br><br>
+                Change the speed using the tempo slider. <br><br>
+                Save your work and share it with friends. <br><br>
+                On Apple phones turn off silent mode.
+            </p>
+
+            <div class="logo-bar">
+
+            <img src="/images/LPO_logo.png" alt="London Philharmonic Orchestra logo" class="lpo-logo">
+
+            <img src="/images/DMLogo.png" alt="Drake Music logo" class="dm-logo">
+
+            </div>
+
         {:else if viewState === info}
-            <h3 class="saved-text">info</h3>
+            <h3 class="saved-text common-text">info</h3>
         {:else}
-            <div class="bpm-controls">
+            <div class="transport-top">
                 
                 {#if fullScreen.fullscreenSupport}
                     <button on:click={fullScreen.fsToggle}>
@@ -376,17 +442,12 @@
                     />
                 {/if}
 
-                {#if isPlaying}
-                    <TransportButton 
-                    on:clicked={handleStopClick}
-                    buttonName = "{{name: "Stop", colour: "Red"}}"
-                    />
-                {:else}
-                    <TransportButton 
-                    on:clicked={handlePlayClick}
-                    buttonName = "{{name: "Play", colour: "green"}}"
-                    />
-                {/if}
+                <TransportButton 
+                        on:clicked={handleHome}
+                        buttonName = "{{name: "Home", colour: "blue"}}"
+                        />
+
+                
 
                 {#if viewState === save}
                     <TransportButton 
@@ -432,7 +493,7 @@
             {:else if viewState === settings}
             
                 <div class="select-div">
-                    <label class="select-label" for="keymenu">Change Key</label>
+                    <label class="select-label common-text" for="keymenu">Change Key</label>
 
                     <select id="keymenu" class="select-menu" bind:value={selectedKey}>
                         {#each keys as option}
@@ -440,7 +501,7 @@
                         {/each}	
                     </select>
                 
-                    <label class="select-label" for="scalemenu">Change Scale</label>
+                    <label class="select-label common-text" for="scalemenu">Change Scale</label>
 
                     <select id="scalemenu" class="select-menu" bind:value={selectedScale}>
                         {#each scales as option}
@@ -448,7 +509,7 @@
                         {/each}	
                     </select>
 
-                    <label class="select-label" for="octavemenu">Change Octave</label>
+                    <label class="select-label common-text" for="octavemenu">Change Octave</label>
 
                     <select id="octavemenu" class="select-menu" bind:value={selectedOctave}>
                         {#each octaves as option}
@@ -461,9 +522,9 @@
             {:else if viewState === save}
                 
                 <div class="save-text-box">
-                    <h3 class="saved-text">Share this URL to share your work.</h3>
+                    <h3 class="saved-text common-text">Share this URL to share your work.</h3>
 
-                    <h3 class="saved-text" id="save-text">{saveText}</h3>
+                    <h3 class="saved-text common-text" id="save-text">{saveText}</h3>
                     
                     {#if navigator.clipboard}
                         <TransportButton 
@@ -481,11 +542,18 @@
             {/if}
 
             <div class="bpm-controls">
-                <TransportButton 
-                        on:clicked={handleHome}
-                        buttonName = "{{name: "Home", colour: "blue"}}"
-                        />
-                <label class="bpm-value" for="bpm" >{bpm} BPM</label>
+                {#if isPlaying}
+                    <TransportButton 
+                    on:clicked={handleStopClick}
+                    buttonName = "{{name: "Stop", colour: "Red"}}"
+                    />
+                {:else}
+                    <TransportButton 
+                    on:clicked={handlePlayClick}
+                    buttonName = "{{name: "Play", colour: "green"}}"
+                    />
+                {/if}
+                <label class="bpm-value common-text" for="bpm" >{bpm} BPM</label>
                 <input class="bpm-slider" type="range" id="bpm" min="40" max="170" bind:value={bpm} />
             </div>
         {/if}
@@ -531,13 +599,20 @@
         margin: 5%;
     }
 
-    .saved-text {
+    .common-text {
         font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
-        font-size: 1em;
         color: white;
         text-align: center;
+    }
+
+    .saved-text {
+        font-size: 1em;
         overflow-wrap: break-word;
+    }
+
+    .title {
+        font-size: 3em;
     }
 
     .sequencer {
@@ -548,12 +623,43 @@
         justify-content: center;
     }
 
+    .orchlab-logo {
+        width: 60%;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .lpo-logo {
+        width: 60%;
+        display: block;
+    
+        margin-right: auto;
+    }
+
+    .dm-logo {
+        width: 60%;
+        display: block;
+        margin-left: auto;
+      
+    }
+
     .navigation-buttons {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
         margin: auto;
         justify-content: center;
+        width: 70%;
+    }
+
+    .logo-bar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin: auto;
+        justify-content: center;
+        width: 100%;
     }
 
     .select-menu {
@@ -567,15 +673,19 @@
     .select-label {
         background-size: 8vw; 
         margin: 0 1em 1em 0;
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: bold;
         font-size: 1em;
-        color: white;
-        text-align: center;
     }
 
     .select-div {
         display: grid;
+    }
+
+    .transport-top {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 1em 0;
+        height: 10%;
     }
 
     .bpm-controls {
@@ -583,7 +693,7 @@
         align-items: center;
         justify-content: center;
         margin: 0 1em 0;
-        height: 10%;
+        height: 15%;
     }
 
     .bpm-controls label {
@@ -594,11 +704,7 @@
         width: 20%;
         background-size: 8vw; 
         margin: 0 1em 1em 1em;
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: bold;
         font-size: 1em;
-        color: white;
-        text-align: center;
     }
 
     .bpm-slider {

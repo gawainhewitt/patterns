@@ -44,5 +44,4 @@ export const myTransport = Tone.getTransport();
 
 export const startSound = () => {
     Tone.start();
-    console.log("start sound");
 }
