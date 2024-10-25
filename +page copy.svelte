@@ -2,14 +2,12 @@
       
 	import SequencerStep from "../components/SequencerStep.svelte";
 	import TransportButton from "../components/TransportButton.svelte";
-    import NavigationButton from "../components/NavigationButton.svelte";
     import { onMount } from "svelte";
 
     
     import * as Sound from "$lib/sound.js"
     import { FullScreen } from "$lib/fullScreen.js"
 	import { scale } from "svelte/transition";
-	
 
     const fullScreen = new FullScreen(false, null);
   
@@ -17,12 +15,7 @@
     let beat = -1;
     let isPlaying = false;
     const sequenceLength = 8;
-    let home = 0;
-    let info = 1;
-    let sequencer = 2;
-    let settings = 3;
-    let save = 4;
-    let viewState = home;
+    let viewState = 2; // 0 = home, 1 = info; 2 = sequencer; 4 = save
     
     let scales = [ 
         {label: "Major", notes: [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19], index: 0},
@@ -50,11 +43,7 @@
 
     let scaleOfNotes = scales[0].notes;
 
-    let harpRows = new Array;
-
-    let drumRows = new Array;
-
-    let largeHarpRows = [
+    let harpRows = [
         Array.from({ length: sequenceLength }, (_, i) => ({ note: scaleOfNotes[6], active: false})), 
         Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[5], active: false})),
         Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[4], active: false})),
@@ -64,30 +53,17 @@
         Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
     ];
 
-    let qwertyHarpRows = [
-        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[3], active: false})),
-        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[2], active: false})),
-        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[1], active: false})),
-        Array.from({ length: sequenceLength  }, (_, i) => ({ note: scaleOfNotes[0], active: false}))
-    ];
-
-    let largeDrumRows = [
+    let drumRows = [
         Array.from({ length: sequenceLength  }, (_, i) => ({ note: "E4", instrumentName: "woodblock", active: false})),
         Array.from({ length: sequenceLength  }, (_, i) => ({ note: "D4", instrumentName: "snare", active: false})),
         Array.from({ length: sequenceLength  }, (_, i) => ({ note: "C4", instrumentName: "kick", active: false})),
     ]
-
-    let qwertyDrumRows = [];
-
-    harpRows = largeHarpRows;
-    drumRows = largeDrumRows;
 
     Sound.myTransport.scheduleRepeat((time) => {
         beat = (beat+1) % sequenceLength;
         harpRows.forEach((row, index) => {
             let note = row[beat];
             if (note.active) {  
-                console.log(note.note)
                 Sound.harpSampler.triggerAttackRelease(note.note, "8n", time);
             }
         });
@@ -149,20 +125,20 @@
     };
 
     const handleSettingsClick = (e) => {
-        if(viewState === sequencer){
-            viewState = settings;
+        if(viewState === 2){
+            viewState = 3;
         } else {
-            viewState = sequencer;
+            viewState = 2;
         }
         harpRows = harpRows;
     }
 
     const handleSave = () => {
         saveSeq();
-        if(viewState === save){
-            viewState = sequencer;
+        if(viewState === 4){
+            viewState = 2;
         } else {
-            viewState = save;
+            viewState = 4;
         }
     }
 
@@ -170,26 +146,7 @@
         navigator.clipboard.writeText(saveText);
         alert("Copied the text: " + saveText);
         
-        viewState = sequencer;
-    }
-
-    const handleLargeSequencerClick = () => {
-        harpRows = largeHarpRows;
-        drumRows = largeDrumRows;
-        changeScale(selectedKey, selectedScale, selectedOctave);
-        viewState = sequencer;
-    }
-    
-    const handleKeyboardSequencerClick = () => {
-        harpRows = qwertyHarpRows;
-        drumRows = qwertyDrumRows;
-        changeScale(selectedKey, selectedScale, selectedOctave);
-        viewState = sequencer;
-    }
-
-    const handleHome = () => {
-        document.location.href = '';
-        saveText = new_url;
+        viewState = 2;
     }
 
     
@@ -228,6 +185,11 @@
 
     let url_ob = new URL(document.URL);
     let saveText;
+
+    const handleClearSavedWorkClick = () => {
+        document.location.href = '';
+        saveText = new_url;
+    }
 
     const handleSaveRestore = (row, step) => {
         if(row < harpRows.length){
@@ -340,155 +302,140 @@
 <div class="fs" bind:this={fullScreen.fsContainer}>
 
     <div class="container">
-        {#if viewState === home}
-            <h3 class="saved-text">home</h3>
-            <div class="navigation-buttons">
-                <NavigationButton
-                    on:clicked={handleLargeSequencerClick}
-                    instrumentName = "large-sequencer"
-                />
-                <NavigationButton
-                    on:clicked={handleKeyboardSequencerClick}
-                    instrumentName = "keyboard-sequencer"
-                />
-            </div>
-
-        {:else if viewState === info}
-            <h3 class="saved-text">info</h3>
-        {:else}
-            <div class="bpm-controls">
-                
-                {#if fullScreen.fullscreenSupport}
-                    <button on:click={fullScreen.fsToggle}>
-                        <i class="material-icons md-36">{icon}</i>
-                    </button>
-                {/if}
-
-                {#if viewState === settings}
-                    <TransportButton 
-                    on:clicked={handleSettingsClick}
-                    buttonName = "{{name: "Back", colour: "powderblue"}}"
-                    />
-                {:else}
-                    <TransportButton 
-                    on:clicked={handleSettingsClick}
-                    buttonName = "{{name: "Settings", colour: "grey"}}"
-                    />
-                {/if}
-
-                {#if isPlaying}
-                    <TransportButton 
-                    on:clicked={handleStopClick}
-                    buttonName = "{{name: "Stop", colour: "Red"}}"
-                    />
-                {:else}
-                    <TransportButton 
-                    on:clicked={handlePlayClick}
-                    buttonName = "{{name: "Play", colour: "green"}}"
-                    />
-                {/if}
-
-                {#if viewState === save}
-                    <TransportButton 
-                    on:clicked={handleSave}
-                    buttonName = "{{name: "Back", colour: "orange"}}"
-                    />
-                {:else}
-                    <TransportButton 
-                    on:clicked={handleSave}
-                    buttonName = "{{name: "Save", colour: "orange"}}"
-                    />
-                {/if}
-
-            </div>
+        <div class="bpm-controls">
             
-            {#if viewState === sequencer}
-                <div class="sequencer">
-                    {#each harpRows as row, i}
-                        {#each row as note, j}
-                            <SequencerStep
-                                on:clicked={handleHarpClick}
-                                instrumentName = "harp"
-                                rowIndex = "{i}"
-                                noteIndex = "{j}"
-                                noteActive = "{note.active}"
-                                noteLive = "{j === beat}"
-                            />
-                        {/each}
-                    {/each}
-                    {#each drumRows as row, i}
-                        {#each row as note, j}
-                            <SequencerStep
-                                on:clicked={handleDrumClick}
-                                instrumentName = {note.instrumentName}
-                                rowIndex = "{i}"
-                                noteIndex = "{j}"
-                                noteActive = "{note.active}"
-                                noteLive = "{j === beat}"
-                            />
-                        {/each}
-                    {/each}
-                </div>
-            {:else if viewState === settings}
-            
-                <div class="select-div">
-                    <label class="select-label" for="keymenu">Change Key</label>
-
-                    <select id="keymenu" class="select-menu" bind:value={selectedKey}>
-                        {#each keys as option}
-                            <option value={option}>{option.key}</option>
-                        {/each}	
-                    </select>
-                
-                    <label class="select-label" for="scalemenu">Change Scale</label>
-
-                    <select id="scalemenu" class="select-menu" bind:value={selectedScale}>
-                        {#each scales as option}
-                            <option value={option}>{option.label}</option>
-                        {/each}	
-                    </select>
-
-                    <label class="select-label" for="octavemenu">Change Octave</label>
-
-                    <select id="octavemenu" class="select-menu" bind:value={selectedOctave}>
-                        {#each octaves as option}
-                            <option value={option}>{option}</option>
-                        {/each}	
-                    </select>
-
-                </div>
-
-            {:else if viewState === save}
-                
-                <div class="save-text-box">
-                    <h3 class="saved-text">Share this URL to share your work.</h3>
-
-                    <h3 class="saved-text" id="save-text">{saveText}</h3>
-                    
-                    {#if navigator.clipboard}
-                        <TransportButton 
-                        on:clicked={handleCopyURLClick}
-                        buttonName = "{{name: "Copy URL To Clipboard", colour: "blue"}}"
-                        />
-                    {:else}
-                        <TransportButton 
-                        on:clicked={handleSave}
-                        buttonName = "{{name: "Back", colour: "blue"}}"
-                        />
-                    {/if}
-                </div>
-        
+            {#if fullScreen.fullscreenSupport}
+                <button on:click={fullScreen.fsToggle}>
+                    <i class="material-icons md-36">{icon}</i>
+                </button>
             {/if}
 
-            <div class="bpm-controls">
+            {#if viewState === 3}
                 <TransportButton 
-                        on:clicked={handleHome}
-                        buttonName = "{{name: "Home", colour: "blue"}}"
+                on:clicked={handleSettingsClick}
+                buttonName = "{{name: "Back", colour: "powderblue"}}"
+                />
+            {:else}
+                <TransportButton 
+                on:clicked={handleSettingsClick}
+                buttonName = "{{name: "Settings", colour: "grey"}}"
+                />
+            {/if}
+
+            {#if isPlaying}
+                <TransportButton 
+                on:clicked={handleStopClick}
+                buttonName = "{{name: "Stop", colour: "Red"}}"
+                />
+            {:else}
+                <TransportButton 
+                on:clicked={handlePlayClick}
+                buttonName = "{{name: "Play", colour: "green"}}"
+                />
+            {/if}
+
+            {#if viewState === 4}
+                <TransportButton 
+                on:clicked={handleSave}
+                buttonName = "{{name: "Back", colour: "orange"}}"
+                />
+            {:else}
+                <TransportButton 
+                on:clicked={handleSave}
+                buttonName = "{{name: "Save", colour: "orange"}}"
+                />
+            {/if}
+
+        </div>
+        
+        {#if viewState === 2}
+            <div class="sequencer">
+                {#each harpRows as row, i}
+                    {#each row as note, j}
+                        <SequencerStep
+                            on:clicked={handleHarpClick}
+                            instrumentName = "harp"
+                            rowIndex = "{i}"
+                            noteIndex = "{j}"
+                            noteActive = "{note.active}"
+                            noteLive = "{j === beat}"
                         />
-                <label class="bpm-value" for="bpm" >{bpm} BPM</label>
-                <input class="bpm-slider" type="range" id="bpm" min="40" max="170" bind:value={bpm} />
+                    {/each}
+                {/each}
+                {#each drumRows as row, i}
+                    {#each row as note, j}
+                        <SequencerStep
+                            on:clicked={handleDrumClick}
+                            instrumentName = {note.instrumentName}
+                            rowIndex = "{i}"
+                            noteIndex = "{j}"
+                            noteActive = "{note.active}"
+                            noteLive = "{j === beat}"
+                        />
+                    {/each}
+                {/each}
             </div>
+        {:else if viewState === 3}
+        
+            <div class="select-div">
+                <label class="select-label" for="keymenu">Change Key</label>
+
+                <select id="keymenu" class="select-menu" bind:value={selectedKey}>
+                    {#each keys as option}
+                        <option value={option}>{option.key}</option>
+                    {/each}	
+                </select>
+            
+                <label class="select-label" for="scalemenu">Change Scale</label>
+
+                <select id="scalemenu" class="select-menu" bind:value={selectedScale}>
+                    {#each scales as option}
+                        <option value={option}>{option.label}</option>
+                    {/each}	
+                </select>
+
+                <label class="select-label" for="octavemenu">Change Octave</label>
+
+                <select id="octavemenu" class="select-menu" bind:value={selectedOctave}>
+                    {#each octaves as option}
+                        <option value={option}>{option}</option>
+                    {/each}	
+                </select>
+
+                <TransportButton 
+                on:clicked={handleClearSavedWorkClick}
+                buttonName = "{{name: "Clear Saved Work", colour: "Red"}}"
+                />
+
+            </div>
+
+        {:else if viewState === 4}
+            
+            <div class="save-text-box">
+                <h3 class="saved-text">Share this URL to share your work.</h3>
+
+                <h3 class="saved-text" id="save-text">{saveText}</h3>
+                
+                {#if navigator.clipboard}
+                    <TransportButton 
+                    on:clicked={handleCopyURLClick}
+                    buttonName = "{{name: "Copy URL To Clipboard", colour: "blue"}}"
+                    />
+                {:else}
+                    <TransportButton 
+                    on:clicked={handleSave}
+                    buttonName = "{{name: "Back", colour: "blue"}}"
+                    />
+                {/if}
+            </div>
+     
         {/if}
+
+        <div class="bpm-controls">
+            <label class="bpm-value" for="bpm" >{bpm} BPM</label>
+            <input class="bpm-slider" type="range" id="bpm" min="40" max="170" bind:value={bpm} />
+        </div>
+    
     </div>
 </div>
 
@@ -548,14 +495,6 @@
         justify-content: center;
     }
 
-    .navigation-buttons {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin: auto;
-        justify-content: center;
-    }
-
     .select-menu {
         margin: 2em;
         justify-content: center;
@@ -593,7 +532,7 @@
     .bpm-value {
         width: 20%;
         background-size: 8vw; 
-        margin: 0 1em 1em 1em;
+        margin: 0 1em 1em 0;
         font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
         font-size: 1em;
