@@ -4,7 +4,7 @@ export const harpSampler = new Tone.Sampler({
     urls: {
         C4: "Harp-C4.mp3",
     },
-    baseUrl: "/audio/",
+    baseUrl: "audio/",
     onload: () => {
     }
 });
@@ -15,7 +15,7 @@ export const drumSampler = new Tone.Sampler({
         D4: "snare.mp3",
         E4: "woodblock.mp3"
     },
-    baseUrl: "/audio/",
+    baseUrl: "audio/",
     onload: () => {
     }
 }).toDestination();

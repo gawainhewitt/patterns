@@ -437,7 +437,7 @@
 
     <div class="container">
         {#if viewState === home}
-            <img src="/images/orchlablogo.png" alt="Orchlab logo" class="orchlab-logo">
+            <img src="images/orchlablogo.png" alt="Orchlab logo" class="orchlab-logo">
 
             <h1 class="title common-text">Patterns</h1>
 
@@ -467,9 +467,9 @@
 
             <div class="logo-bar">
 
-            <img src="/images/LPO_logo.png" alt="London Philharmonic Orchestra logo" class="lpo-logo">
+            <img src="images/LPO_logo.png" alt="London Philharmonic Orchestra logo" class="lpo-logo">
 
-            <img src="/images/DMLogo.png" alt="Drake Music logo" class="dm-logo">
+            <img src="images/DMLogo.png" alt="Drake Music logo" class="dm-logo">
 
             </div>
 
