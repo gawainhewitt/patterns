@@ -8,7 +8,8 @@
     
     import * as Sound from "$lib/sound.js"
     import { FullScreen } from "$lib/fullScreen.js"
-	
+
+    let url = import.meta.env.VITE_URL_PREFIX || "";
 
     const fullScreen = new FullScreen(false, null);
   
