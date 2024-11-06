@@ -11,6 +11,12 @@
 
     let url = import.meta.env.VITE_URL_PREFIX || "";
 
+    if (url.length > 1){
+        url = `${url}/`
+    }
+
+    console.log(`page url = ${url}`)
+
     const fullScreen = new FullScreen(false, null);
   
     let bpm = 99;

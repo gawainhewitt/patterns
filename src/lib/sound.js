@@ -5,7 +5,7 @@ if (url.length > 1){
   url = `${url}/`
 }
 
-// console.log(`url = ${url}`)
+console.log(`sound component url = ${url}`)
 
 export const harpSampler = new Tone.Sampler({
     urls: {
