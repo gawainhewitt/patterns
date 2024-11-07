@@ -1,20 +1,10 @@
 import * as Tone from "tone";
-// let url = import.meta.env.VITE_URL_PREFIX || "";
-
-// if (url.length > 1){
-//   url = `${url}/`
-// }
-
-let url = "";
-
-// console.log(`sound component url = ${url}`)
-console.log("7th november last checks");
 
 export const harpSampler = new Tone.Sampler({
     urls: {
         C4: "Harp-C4.mp3",
     },
-    baseUrl: `${url}audio/`,
+    baseUrl: `audio/`,
     onload: () => {
     }
 });
@@ -27,7 +17,7 @@ export const drumSampler = new Tone.Sampler({
         D4: "snare.mp3",
         E4: "woodblock.mp3"
     },
-    baseUrl: `${url}audio/`,
+    baseUrl: `audio/`,
     onload: () => {
     }
 }).toDestination();

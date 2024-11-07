@@ -9,14 +9,6 @@
     import * as Sound from "$lib/sound.js"
     import { FullScreen } from "$lib/fullScreen.js"
 
-    // let url = import.meta.env.VITE_URL_PREFIX || "";
-
-    // if (url.length > 1){
-    //     url = `${url}/`
-    // }
-
-    // console.log(`page url = ${url}`)
-
     const fullScreen = new FullScreen(false, null);
   
     let bpm = 99;
@@ -203,7 +195,6 @@
     }
 
     const buildHarpRows = (seqType)  => {
-        console.log(`buildHarpRows = ${seqType}`)
         if(seqType === mouseTouchSequencer){
             harpRows = largeHarpRows;
             drumRows = largeDrumRows;
@@ -295,14 +286,12 @@
 
         let bpmToSave = parseInt(bpm, 10).toString(16);
 
-        console.log(`sequencer type to save is ${sequencerType}`);
 
         hexToSave = `${hexToSave}_${bpmToSave}_${selectedKey.index}_${selectedScale.index}_${selectedOctave}_${sequencerType}`;
         url_ob.hash = `#${hexToSave}`;
         let new_url = url_ob.href;
         document.location.href = new_url;
         saveText = new_url;
-        console.log(saveText);
     }
 
     function retrieveSavedWork() {
@@ -316,25 +305,9 @@
 
             let savedSequencerTypeAsInt = parseInt(savedSequencerType);
 
-            console.log(typeof(savedSequencerTypeAsInt))
-
             buildHarpRows(savedSequencerTypeAsInt);
 
-            console.log(`saved sequencer type = ${savedSequencerType}`)
-
-            console.log(`saved work as an array = ${savedWorkAsArray}`)
-
-            // i think it's passing the number to the function as a string
-
-
             let seqRows = harpRows.length + drumRows.length;
-            
-            console.log(`seqRows = ${seqRows}`);
-            // the issue here is that seqrows is set before we know how big it should be. 
-
-            // so can we get this information from the thing first?
-
-            
        
             let savedseqRowBinary = new Array;
             
@@ -355,10 +328,6 @@
             let savedScale = (parseInt(savedWorkAsArray[seqRows+3], 16).toString(10));
         
             let savedOctave = (parseInt(savedWorkAsArray[seqRows+4], 16).toString(10));
-
-            // let savedSequencerType = (parseInt(savedWorkAsArray[seqRows+5], 16).toString(10));
-
-            console.log(`saved octave = ${savedOctave}`);
       
             selectedKey = keys[savedKey];
             selectedScale = scales[savedScale];
@@ -388,7 +357,6 @@
 
     const handleKeyDown = (e) => {
         let key = e.code;
-        console.log(`keydown ${key}`);
         whichKey(key);
     };
 
@@ -418,7 +386,6 @@
         for (let i = 0; i < qwertyRows.length; i++) {
             for (let j = 0; j < sequenceLength; j++) {           
                 if (key === qwertyRows[i][j]) {
-                    console.log(i, j)
                     harpRows[i][j].active = !harpRows[i][j].active;
                 }
             }
