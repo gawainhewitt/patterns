@@ -1,11 +1,14 @@
 import * as Tone from "tone";
-let url = import.meta.env.VITE_URL_PREFIX || "";
+// let url = import.meta.env.VITE_URL_PREFIX || "";
 
-if (url.length > 1){
-  url = `${url}/`
-}
+// if (url.length > 1){
+//   url = `${url}/`
+// }
 
-console.log(`sound component url = ${url}`)
+let url = "";
+
+// console.log(`sound component url = ${url}`)
+console.log("7th november last checks");
 
 export const harpSampler = new Tone.Sampler({
     urls: {

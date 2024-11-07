@@ -9,13 +9,13 @@
     import * as Sound from "$lib/sound.js"
     import { FullScreen } from "$lib/fullScreen.js"
 
-    let url = import.meta.env.VITE_URL_PREFIX || "";
+    // let url = import.meta.env.VITE_URL_PREFIX || "";
 
-    if (url.length > 1){
-        url = `${url}/`
-    }
+    // if (url.length > 1){
+    //     url = `${url}/`
+    // }
 
-    console.log(`page url = ${url}`)
+    // console.log(`page url = ${url}`)
 
     const fullScreen = new FullScreen(false, null);
   
