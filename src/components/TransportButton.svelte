@@ -36,7 +36,7 @@
     }
 
     .button-name {
-        font-family: 'Courier New', Courier, monospace;
+        font-family: Arial, Helvetica, sans-serif;
         font-weight: bold;
         color: white;
         text-align: center;  

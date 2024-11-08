@@ -593,7 +593,7 @@
 <style>
 
     :global(body) {
-        background: #222;
+        background: white;
     }
 
     .container {
@@ -630,7 +630,7 @@
 
     .common-text {
         font-family: Arial, Helvetica, sans-serif;
-        color: white;
+        color: black;
         text-align: center;
     }
 
@@ -693,7 +693,7 @@
     .select-menu {
         margin: 2em;
         justify-content: center;
-        font-family: 'Courier New', Courier, monospace;
+        font-family: Arial, Helvetica, sans-serif;
         font-weight: bold;
         font-size: 1em;
     }

@@ -9,8 +9,6 @@ export const harpSampler = new Tone.Sampler({
     }
 });
 
-
-
 export const drumSampler = new Tone.Sampler({
     urls: {
         C4: "kick.mp3",
