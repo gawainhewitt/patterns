@@ -629,8 +629,7 @@
     }
 
     .common-text {
-        font-family: 'Courier New', Courier, monospace;
-        font-weight: bold;
+        font-family: Arial, Helvetica, sans-serif;
         color: white;
         text-align: center;
     }
